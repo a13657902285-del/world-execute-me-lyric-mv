@@ -116,11 +116,11 @@ export function bootShots(env) {
         room(ctx, { dim: 0.45, t });
         figure(ctx, 0.55);
         windowFrame(ctx, L, { glass: 0.86 });
-        sidebar(ctx, L, { t, loaded: 0, items: script.sidebar ?? Array(6).fill('') });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, loaded: 0, items: script.sidebar ?? Array(6).fill('') });
         header(ctx, L, { t, loaded: 0, title: '' });
         const r = { x: 470, y: 160, w: 760, h: 700 }, b = card(ctx, r, { title: 'persona', subtitle: text(6).toLowerCase(), tag: 'setup', k: prog(t, B(4) - 0.1, B(4) + 0.25) });
         if (b) {
-          const rows = [['name', 'Claude', 'serif'], ['voice', 'serif, unhurried', 'serif'], ['warmth', null, null], ['memory', 'this conversation', 'sans'], ['love', 'undefined', 'mono']];
+          const rows = [['name', 'Muse', 'serif'], ['voice', 'serif, unhurried', 'serif'], ['warmth', null, null], ['memory', 'this conversation', 'sans'], ['love', 'undefined', 'mono']];
           rows.forEach(([label, value, font], i) => {
             const t0 = B(4) + P * 0.5 + i * P, e = enter(t, t0, 0, { dur: 0.28, rise: 20 }), y = b.y + 22 + i * 104 + e.dy;
             if (e.a <= 0) return;
@@ -133,10 +133,10 @@ export function bootShots(env) {
             } else slider(ctx, { x: b.x + 216, y, w: b.w - 256, h: 64 }, 0.62 * easeOut(prog(t, t0 + 0.1, t0 + 0.7)), { fill: 'sub', alpha: e.a });
           });
         }
-        if (init > 0) {                                              // the loader is the film's motif: twelve petals, one after another
+        if (init > 0) {                                              // the loader is her mark, fading in
           const x = 1500, y = 440, a = clamp(init * 5);
           ctx.radial(x, y, 330, 'raised', 0.9 * a);
-          spark(ctx, x, y, 190, { lit: init, color: 'text', off: 'mute', alpha: a });
+          spark(ctx, x, y, 150, { lit: init, alpha: a });
           ctx.text(`${String(Math.round(init * 100)).padStart(3, ' ')}%`, x, y + 286, { size: 34, font: 'mono', color: 'sub', align: 'center', alpha: a });
         }
         ctx.camera();                                                // screen space from here
@@ -155,7 +155,7 @@ export function bootShots(env) {
         room(ctx, { dim: 0.4, t });
         figure(ctx, 0.7 + 0.2 * sim, -40 * easeOut(prog(t, B(6), B(8))));             // slight parallax against the push-in
         windowFrame(ctx, L, { glass: 0.8 });
-        sidebar(ctx, L, { t, k: 1, loaded: easeOut(load), items: script.sidebar ?? [], lit: 0, presence: 'offline' });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, k: 1, loaded: easeOut(load), items: script.sidebar ?? [], lit: 0, presence: 'offline' });
         header(ctx, L, { t, title: 'New chat', loaded: easeOut(prog(t, B(6) + 0.6, B(6) + 1.4)) });
         log(ctx, t, 8, 9, L.main.x + 38, L.head.y + L.head.h + 62);
         const cx = L.main.x + L.main.w / 2, cy = 430;

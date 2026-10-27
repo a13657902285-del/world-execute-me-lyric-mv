@@ -26,8 +26,10 @@ import { outline, smoothPath } from './trace.js';
 import { clamp } from './util.js';
 
 /** The silhouettes (assets/character/<key>.png; sources and what each shows: docs/v4/PLAN.md §4). All the art there is. */
-export const INK_NAMES = ['f_bust', 'f_profile', 'f_reach', 'f_eye', 'boy_bust', 'man_bust', 'cat_bust', 'cat_paws'];
+export const INK_NAMES = ['f_bust', 'f_profile', 'f_reach', 'f_eye', 'boy_bust', 'man_bust', 'cat_bust', 'cat_paws', 'chibi_happy', 'chibi_sleep', 'chibi_sparkle', 'key_visual'];
 export const ART_NAMES = INK_NAMES;
+/** Pictures used as-is (no three-ink separation): assets/character/<key>.png, already in the film's colours. */
+export const RAW_NAMES = ['popsicle', 'icecream', 'me_expr_surprised', 'me_expr_determined', 'me_expr_gentle', 'me_expr_reach', 'muse_mark', 'me_definitive', 'me_sil_front', 'me_sil_profile', 'me_sil_duo', 'me_v2_skull'];
 
 const LUM_H = 240;                              // working resolution of the luminance maps: the longer side
 const MAX_UNTREATED = 1.75;                     // max source magnification at 4K for plate bitmaps (above it: paths)
@@ -41,7 +43,7 @@ const INK_KEY = { cream: 0, orange: 1, black: 2 };
  * Registration onto f_bust: p' = s * p + [tx, ty] in source px (measured, docs/v4/maps/map_assets.json):
  * the chin, the flower and the collar then coincide.
  */
-const REGISTER = { cat_bust: [1.0, -28, -49], boy_bust: [0.89, 60, -18], man_bust: [0.873, 81, -4] };
+const REGISTER = { cat_bust: [1.0, -51, -186], boy_bust: [0.89, 60, -18], man_bust: [0.873, 81, -4] };
 
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 
@@ -55,6 +57,14 @@ export async function loadArt(cfg, step = () => {}) {
     art._prepareInk(name, img);
     await step(`silhouette  ${name}`);
   }));
+  art.raw = {};
+  await Promise.all(RAW_NAMES.map(async (name) => {
+    const img = new Image();
+    img.src = `/${dir}/${name}.png`;
+    await img.decode();
+    art.raw[name] = img;
+    await step(`art  ${name}`);
+  }));
   try { art.regions = await (await fetch(`/${dir}/regions.json`)).json(); } catch { art.regions = {}; }
   return art;
 }
@@ -62,7 +72,7 @@ export async function loadArt(cfg, step = () => {}) {
 export class Art {
   constructor() {
     this.sil = {}; this.lum = {}; this.regions = {};
-    this.ink = {}; this.dim = {}; this.walls = {};
+    this.ink = {}; this.dim = {}; this.walls = {}; this.raw = {};
     this.tmpA = mk(8, 8); this.tmpB = mk(8, 8); this.tmpC = mk(8, 8);
   }
 

@@ -118,6 +118,7 @@ if (!browser) throw new Error('No Chrome/Edge found for Playwright (set export.b
 
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  await page.context().grantPermissions(['local-network-access']); // Chromium 139+: allow localhost server+WS
   page.on('pageerror', (e) => { failed = e; console.error('[page error]', e.message); });
   page.on('console', (m) => { if (m.type() === 'error') console.error('[page]', m.text()); });
   await page.goto(`${url}/?mode=export&w=${W}&h=${H}${LAB ? `&lab=${encodeURIComponent(LAB)}` : ''}`);

@@ -18,6 +18,7 @@
 //
 // Every time here comes from the beat grid (Bt): the LRC runs about 0.4 s early through this passage.
 import { codeGround } from '../components/code.js';
+import { mascotSmall, mePortrait } from './objects.js';
 import { clamp, easeOut, lerp, prog } from '../engine/util.js';
 import { cues, tearAt } from './kit.js';
 import { CHUNKS, machine, monoWord } from './loop.js';
@@ -56,6 +57,16 @@ export function executionShots(env) {
     if (!last) {
       machine(ctx, { word: WORD, title: TITLE, round: S.i, sung: S.sung, bar: S.bar, since: S.since, rise: S.rise, zoom: S.zoom, arrow: S.arrow, seen: S.seen, count: S.count });
       if (S.i >= 8) tearAt(ctx, t, tR(S.i) + P, 0.5);                  // from round 9: one tear a round, on its second beat
+      if (S.i <= 2) {
+        // B-determined: the loop starts — she is not passively stuck, she is executing herself.
+        const dk = clamp((t - tR(0)) / 0.5) * (1 - prog(t, tR(2) + P, tR(3)));
+        if (dk > 0) mePortrait(ctx, env, 'me_expr_determined', { x: 1740, y: 590, w: 140, h: 186 }, { alpha: 0.92 * dk });
+      }
+      if (S.i < 11) {
+        // D-mascot: her little assistant squats by the round counter and hops one step each round.
+        const turn = (t - tR(S.i)) / (2 * P);
+        mascotSmall(ctx, env, 372, 928, 96, { alpha: 0.9, bob: turn * Math.PI });
+      }
       return;
     }
     // round 12: the word takes the frame; the staircase is pushed out of the top; the counter overflows

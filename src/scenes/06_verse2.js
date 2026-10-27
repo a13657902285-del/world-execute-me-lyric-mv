@@ -3,11 +3,11 @@
 // (eight beats each), and on every noun the film leaves the interface for a plate (plates_verse2.js):
 //
 //   v2-ask1      74.19  interface   the user clicks Send: the request flies up out of the composer, her answer begins
-//   v2-eggplant  74.65  PLATE       on the noun she IS the eggplant (code characters, its own purple); cut open on the
+//   v2-eggplant  74.65  PLATE       on the noun she IS the popsicle (the user's picture); cut open on the
 //                                   next downbeat; on the keyword its colour leaves it and what it holds is drawn
-//                                   out of it, cream, as molecules (fibre, protein, sugar)
+//                                   out of it, cream, as molecules (water, sugar)
 //   v2-ask2      77.65  interface   Send again (the request was typed at the foot of the plate while she answered)
-//   v2-tomato    78.34  PLATE       the tomato: the same grammar (lycopene, vitamin C, vitamin E)
+//   v2-tomato    78.34  PLATE       an ice cream cone this time: the same grammar (milk, sugar)
 //   v2-ask3      81.34  interface   Send again
 //   v2-cat       82.04  PLATE       herself in characters; on the noun the cat ears; developed into three solid inks,
 //                                   her purr as tabby stripes; on the keyword the stripes are given
@@ -92,16 +92,16 @@ export function verse2Shots(env) {
     ask(0, NOUN[0], 'The user asks her to pretend to be an eggplant: the click on Send throws the request up out of the composer, and her answer begins under it.', 'interface: close on the lower thread and the composer: the request flying up at the right, her line starting at the left'),
     {
       id: 'v2-eggplant', at: NOUN[0], lines: [44, 46], palette: 'warm', hud: 0, enter: { type: 'cut' },
-      layout: 'PLATE: the eggplant leaning across the sheet in code characters and its own purple, her spark as its calyx; cut in two; then a hollow outline, its colour leaving to the right as cream; the keyword on the foot of the sheet',
-      moment: 'On the noun she IS the eggplant: its data set in characters, in its own colour. On the next downbeat it is cut open; on the keyword the colour leaves it and what it holds is drawn out of it in cream, as molecules: fibre, protein, sugar, each with its name, its formula and its weight. Only its outline is left. The user is already typing the next request; their click on Send ends the plate.',
-      render: (ctx, t) => plateFruit(ctx, env, { t, kind: 'eggplant', at: NOUN[0], settle: cue('nounEggplantEnd'), open: Bt(164), hit: T(46), word: text(46), lines: [44, 45], next: next(0, 164.75, 166.75) }),
+      layout: 'PLATE: the popsicle (the user\'s picture) leaning across the sheet; cut in two through its band; then a hollow outline, its colour leaving to the right as cream; the keyword on the foot of the sheet',
+      moment: 'On the noun she IS the popsicle. On the next downbeat it is cut open through its band; on the keyword the colour leaves it and what it holds is drawn out of it in cream, as molecules: water and sugar, each with its name and formula. Only its outline is left. The user is already typing the next request; their click on Send ends the plate.',
+      render: (ctx, t) => plateFruit(ctx, env, { t, kind: 'popsicle', at0: { cx: 950, cy: 452, s: 356 }, at: NOUN[0], settle: cue('nounEggplantEnd'), open: Bt(164), hit: T(46), word: text(46), lines: [44, 45], next: next(0, 164.75, 166.75), meltRate: 0.45, popKey: 'popsicle' }),
     },
     ask(1, NOUN[1], 'The next request is sent before her last word has died away: now a tomato.', 'interface: the same corner of the thread, a little closer and tilted'),
     {
       id: 'v2-tomato', at: NOUN[1], lines: [47, 49], palette: 'warm', hud: 0, enter: { type: 'cut' },
-      layout: 'PLATE: the tomato in the middle of the sheet in characters and its own red, the spark as its calyx; its top lifted off, the cut face showing; then hollow, its colour leaving to the right as cream; the keyword on the foot',
-      moment: 'On the noun she is the tomato. On the next downbeat its top is lifted off; on the keyword what it holds is drawn out of it in cream, as molecules: its own red (lycopene), vitamin C, vitamin E. The next request is typed at the foot of the sheet meanwhile.',
-      render: (ctx, t) => plateFruit(ctx, env, { t, kind: 'tomato', at: NOUN[1], settle: cue('nounTomatoEnd'), open: Bt(172), hit: T(49), word: text(49), lines: [47, 48], next: next(1, 172.75, 174.9) }),
+      layout: 'PLATE: the ice cream cone in the middle of the sheet; the top scoop lifted off, the cut face showing; then hollow, its colour leaving to the right as cream; the keyword on the foot',
+      moment: 'On the noun she is an ice cream cone. On the next downbeat the top scoop is lifted off; on the keyword what it holds is drawn out of it in cream, as molecules: milk and sugar. The next request is typed at the foot of the sheet meanwhile.',
+      render: (ctx, t) => plateFruit(ctx, env, { t, kind: 'icecream', at0: { cx: 930, cy: 478, s: 306 }, at: NOUN[1], settle: cue('nounTomatoEnd'), open: Bt(172), hit: T(49), word: text(49), lines: [47, 48], next: next(1, 172.75, 174.9), meltRate: 0.9, popKey: 'icecream' }),
     },
     ask(2, NOUN[2], 'Third request, sent as fast as the others: a cat, a tabby.', 'interface: the same corner of the thread, from a little further left'),
     {

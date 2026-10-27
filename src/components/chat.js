@@ -102,13 +102,14 @@ export function skeleton(ctx, x, y, w, h, t, { alpha = 1, r = h / 2, seed = 0 } 
  * Sidebar. k = 0..1 load progress (rows arrive one after another); loaded = 0..1 cross-fade from
  * skeleton bars to real labels. items: conversation titles; active: index of the open one.
  */
-export function sidebar(ctx, L, { k = 1, loaded = 1, items = [], active = -1, t = 0, lit = 1, user = 'you', presence: pres = null, brand = 'Claude' } = {}) {
+export function sidebar(ctx, L, { k = 1, loaded = 1, items = [], active = -1, t = 0, lit = 1, user = 'you', presence: pres = null, brand = 'Muse', mark = null } = {}) {
   const s = L.side;
   if (s.w < 40 || k <= 0) return;
   ctx.clip(s, () => {
     const x = s.x + 22;
     const a0 = clamp(k * 6);
-    spark(ctx, x + 15, s.y + 34, 15, { lit, alpha: a0 });
+    if (mark) { const g = ctx.g, ms = 34; g.save(); g.globalAlpha = a0; g.drawImage(mark, x + 15 - ms / 2, s.y + 34 - ms / 2, ms, ms); g.restore(); }
+    else spark(ctx, x + 15, s.y + 34, 15, { lit, alpha: a0 });
     ctx.text(brand, x + 40, s.y + 43, { size: 25, weight: 600, font: 'serif', color: 'text', alpha: a0 * loaded });
     if (loaded < 1) skeleton(ctx, x + 40, s.y + 24, 96, 20, t, { alpha: a0 * (1 - loaded) });
     const a1 = clamp(k * 6 - 0.6);
@@ -163,7 +164,7 @@ export function header(ctx, L, { title = '', k = 1, presence: pres = null, t = 0
  * the second, so the line being typed, the caret and the bottom row stay where they are (`box` is
  * the box as drawn, taller then).
  */
-export function composer(ctx, r, { text = '', placeholder = '', focus = 0, k = 1, t = 0, send = 'idle', caret = true, color = 'text', size = 28, shake = 0, label = 'Claude' } = {}) {
+export function composer(ctx, r, { text = '', placeholder = '', focus = 0, k = 1, t = 0, send = 'idle', caret = true, color = 'text', size = 28, shake = 0, label = 'Muse' } = {}) {
   const a = clamp(k * 2), e = k >= 1 ? 1 : easeOut(k), y = r.y + (1 - e) * 46 + shake;
   const sendC = [r.x + r.w - 44, y + r.h - 40, 20], tx = r.x + 30, ty = y + 48;
   if (a <= 0) return { caret: [tx, ty - 10], send: sendC, box: r };

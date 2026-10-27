@@ -189,6 +189,11 @@ export function chorusShots(env) {
       reaction(ctx, palm[0] - 84, palm[1] + 78, { k });
       burst(ctx, palm[0], palm[1], 120, prog(t, tHeart, tHeart + 0.5), { color: 'text' });
     }
+    // sticker: her happy chibi pops in beside the picture once the heart lands
+    {
+      const sk = prog(t, tHeart + 0.35, tHeart + 0.75), s = 175 * easeBack(sk);
+      if (s > 1) art.inks(ctx, 'chibi_happy', { x: r.x - s - 26, y: r.y + r.h - s - 18, w: s, h: s }, { alpha: a * clamp(sk * 3) });
+    }
     drawCursor(ctx, [{ t: c[4], x: 860, y: 1030 }, { t: tHeart - 1.2 * P, x: 930, y: 930 }, { t: tHeart, x: palm[0] + 8, y: palm[1] + 10, click: true }, { t: c[5], x: palm[0] - 150, y: palm[1] + 190 }], t, { scale: 2 });
   }
 
@@ -201,11 +206,14 @@ export function chorusShots(env) {
     ctx.fx.glow = Math.min(ctx.fx.glow, 0.42);
     room(ctx, { art, name: 'tea', alpha: 0.5, t, dim: 0.5 });
     windowFrame(ctx, W1, {});
-    ctx.clip(W1.main, () => {                                                  // she is in here too: her bust, dim, behind the page
+    ctx.clip(W1.main, () => {                                                  // she is in here too: her silhouette, dim, behind the page
       ctx.radial(1440, 420, 560, 'meDim', 0.3);
-      art.inks(ctx, 'f_bust', FIG, { alpha: 0.44, roles: { cream: 'mute', orange: 'meDim', black: 'panel' } });
+      const sil = art.raw?.['me_sil_front'];
+      if (sil) { const g = ctx.g, sc = Math.max(FIG.w / sil.width, FIG.h / sil.height), dw = sil.width * sc, dh = sil.height * sc;
+        g.save(); g.globalAlpha = 0.5; g.drawImage(sil, FIG.x + (FIG.w - dw) / 2, FIG.y + (FIG.h - dh) / 2, dw, dh); g.restore(); }
+      else art.inks(ctx, 'f_bust', FIG, { alpha: 0.44, roles: { cream: 'mute', orange: 'meDim', black: 'panel' } });
     });
-    sidebar(ctx, W1, { t, items: [script.title ?? '', ...(script.sidebar ?? [])], active: 0, presence: 'online' });
+    sidebar(ctx, W1, { mark: art.raw?.['muse_mark'],  t, items: [script.title ?? '', ...(script.sidebar ?? [])], active: 0, presence: 'online' });
     const rows = [
       { kind: 'pic' }, { kind: 'me', line: L.run, size: 26 }, { kind: 'me', line: L.kw3, size: 30, weight: 700, hot: true },
       { kind: 'you', str: SAY.shame, at: tShame }, { kind: 'me', line: L.trap, size: 46, at: T(L.trap) }, { kind: 'me', line: L.strange, size: 46, at: tHeld },

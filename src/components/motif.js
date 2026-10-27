@@ -1,25 +1,44 @@
-// The film's one recurring shape: a radial burst. It is the character's flower ornament and
-// the client's spark icon at once, so it is drawn here, in code, and reused everywhere:
+// The film's one recurring shape: the user's hand-painted "m" mark (mist-blue, slightly rough edges).
+// It is the character's seal and the client's mark at once, so it is drawn here and reused everywhere:
 // app icon, avatar, thinking animation, completion ring, click burst, the shape points gather into.
-// (It is our own drawing of a sunburst, taken from the ornament in the supplied character art.)
 import { clamp } from '../engine/util.js';
 
 const TAU = Math.PI * 2;
-/** Petal lengths: slightly uneven, like something cut by hand. */
+/** Petal lengths: slightly uneven, like something cut by hand. (Kept for sparkTips/sparkOutline geometry.) */
 const LEN = [1, 0.8, 0.94, 0.74, 0.98, 0.82, 0.9, 0.76, 1, 0.8, 0.95, 0.78];
 export const RAYS = 12;
 
+/** The m-mark image, set once after art loads. When set, spark() draws it instead of petals. */
+let MARK_IMG = null;
+export function setSparkMark(img) { MARK_IMG = img; }
+
 /**
- * Sunburst / spark.
- *   lit    0..1  share of the rays that are "on" (the rest are drawn as dim ghosts) — progress, attempts.
- *                Rays light clockwise from 12 o'clock; the one in progress grows from the hub to its tip
- *   grow   0..1  rays extend from the centre (ignition)
- *   pulse  (i) => length multiplier, for the thinking animation
- *   fat    petal half-width as a share of r
+ * The m mark.
+ *   lit    0..1  share of the mark that is "on" — fades/scales in with progress.
+ *   grow   0..1  the mark scales up from the centre (ignition)
+ *   pulse  (i) => scale multiplier, for the thinking animation (uses the first petal's value as breathe)
+ *   rot    rotation in radians
  */
 export function spark(ctx, cx, cy, r, { rays = RAYS, rot = 0, color = 'me', off = 'mute', alpha = 1, lit = 1, grow = 1, fat = 0.105, inner = 0.17, pulse = null, core = 0.1, offAlpha = 0.35 } = {}) {
   if (alpha <= 0.003 || r <= 0) return;
-  const g = ctx.g, nLit = lit * rays;
+  const g = ctx.g;
+  if (MARK_IMG) {
+    // The user's hand-painted m: breathe with pulse, scale in with grow, fade with alpha*lit, rotate with rot.
+    const breathe = pulse ? pulse(0) : 1;
+    const s = Math.max(0.001, grow * (0.9 + 0.1 * breathe));
+    const a = alpha * clamp(lit, 0, 1);
+    if (a <= 0.003 || s <= 0.003) return;
+    g.save();
+    g.translate(cx, cy);
+    if (rot) g.rotate(rot);
+    g.scale(s, s);
+    g.globalAlpha = a;
+    const ms = r * 2;
+    g.drawImage(MARK_IMG, -ms / 2, -ms / 2, ms, ms);
+    g.restore();
+    return;
+  }
+  const nLit = lit * rays;
   for (const pass of [0, 1]) {                       // 0 = ghosts, 1 = lit petals (drawn on top, one path each pass)
     g.beginPath();
     let any = false;

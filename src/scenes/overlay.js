@@ -73,8 +73,8 @@ export function overlayScene({ cfg, features }) {
   const T_OFF = features.barTime(112);          // the music stops here
   const NOTE = [
     // literal greys: by now the palette is `dead`, and this note must stay readable
-    ['Unofficial fan-made video.  Not affiliated with, or endorsed by, Anthropic or Mili.', '#b8b6ae'],
-    ['Claude is a trademark of Anthropic.  Music: "world.execute(me);" by Mili.', '#7d7b73'],
+    ['Unofficial fan-made video.  Not affiliated with, or endorsed by, Mili.', '#b8b6ae'],
+    ['Music: "world.execute(me);" by Mili.', '#7d7b73'],
     ['Character silhouettes supplied by the maker of this video.  Interface drawn in code.', '#7d7b73'],
   ];
   return {

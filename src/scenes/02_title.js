@@ -8,7 +8,7 @@ import { chatLayout, composer, drawThread, header, room, sidebar, windowFrame } 
 import { drawCursor } from '../components/cursor.js';
 import { burst, spark } from '../components/motif.js';
 import { frameRect } from '../engine/layout.js';
-import { clamp, easeIn, easeInOut, easeOut, lerp, prog, pulse } from '../engine/util.js';
+import { clamp, easeBack, easeIn, easeInOut, easeOut, lerp, prog, pulse } from '../engine/util.js';
 import { cues, glassFigure } from './kit.js';
 import { enter } from './shot.js';
 
@@ -48,7 +48,7 @@ export function titleShots(env) {
         room(ctx, { light: [960, 400], dim: 0.62, t, motif: 0.6 });
         figure(ctx, 0.5 * lit, 'meDim');
         ctx.radial(C.x, C.y, 620, 'meDim', 0.5 * lit);                         // the room takes its colour from the spark
-        ctx.glow('me', 60, () => spark(ctx, C.x, C.y, 176 * (1 + 0.03 * f.beatPulse), { lit, grow: 0.25 + 0.75 * lit, rot: 0.04 * (t - DROP) }), 0.6 * lit);
+        { const img = art.raw?.['muse_mark'], ms = 352 * (1 + 0.03 * f.beatPulse) * (0.25 + 0.75 * lit); if (img && lit > 0.01) ctx.glow('me', 60, () => { const g = ctx.g; g.save(); g.globalAlpha = 0.92 * Math.min(1, lit * 1.5); g.drawImage(img, C.x - ms / 2, C.y - ms / 2, ms, ms); g.restore(); }, 0.6 * lit); }  // 'm' mark replaces the spark
         // the command: system voice
         const cmd = text(11), n = Math.floor(prog(t, tType, tType + 0.72) * cmd.length + 1e-6), size = 92, cw = ctx.cw(size);
         const str = '> ' + cmd.slice(0, n), x = 960 - ((cmd.length + 2) * cw) / 2, y = 790, a = prog(t, DROP + 0.3, DROP + 0.55);
@@ -71,12 +71,17 @@ export function titleShots(env) {
         room(ctx, { dim: 0.42, t });
         figure(ctx, 0.75);
         windowFrame(ctx, L, { glass: 0.82 });
-        sidebar(ctx, L, { t, items: script.sidebar ?? [], presence: here > 0 ? 'online' : 'offline' });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: script.sidebar ?? [], presence: here > 0 ? 'online' : 'offline' });
         header(ctx, L, { t, title: 'New conversation', presence: here > 0 ? 'online' : null });
         if (here > 0 && here < 1) burst(ctx, L.head.x + L.head.w - 128, L.head.y + 34, 40, here, { color: 'text' });
+        // sticker: her sparkle chibi pops in beside the presence chip when she comes online
+        {
+          const sk = prog(t, tIn + 0.2, tIn + 0.6), s = 130 * easeBack(sk);
+          if (s > 1) art.inks(ctx, 'chibi_sparkle', { x: L.head.x + L.head.w - 128 - s / 2, y: L.head.y + 64, w: s, h: s }, { alpha: clamp(sk * 3) });
+        }
         const cx = L.main.x + L.main.w / 2;
         ctx.radial(cx, 400, 300, 'meDim', 0.4);
-        ctx.glow('me', 30, () => spark(ctx, cx, 400, 84 * (1 + 0.04 * f.beatPulse), { rot: 0.08 * (t - B(6)) }), 0.5);
+        { const img = art.raw?.['muse_mark'], ms = 190 * (1 + 0.04 * f.beatPulse); if (img) ctx.glow('me', 24, () => { const g = ctx.g; g.save(); g.globalAlpha = 0.92; g.drawImage(img, cx - ms / 2, 400 - ms / 2, ms, ms); g.restore(); }, 0.45); }
         const box = composer(ctx, { ...L.composer, y: 610 }, { placeholder: script.composer_placeholder ?? '', t, focus: t >= tFocus ? 1 : 0, send: 'idle' });
         drawCursor(ctx, [
           { t: tIn - 0.15, x: 2010, y: 250 }, { t: tIn + 1.5 * P, x: 1470, y: 380 }, { t: B(11), x: 1240, y: 560 },
@@ -99,10 +104,10 @@ export function titleShots(env) {
         room(ctx, { dim: 0.42, t });
         figure(ctx, 0.75);
         windowFrame(ctx, L, { glass: 0.82 });
-        sidebar(ctx, L, { t, items: script.sidebar ?? [], presence: 'online' });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: script.sidebar ?? [], presence: 'online' });
         header(ctx, L, { t, title: 'New conversation', presence: 'online' });
         const cx = L.main.x + L.main.w / 2;
-        ctx.glow('me', 30, () => spark(ctx, cx, 400, 84, { rot: 0.08 * (t - B(6)) }), 0.5);
+        { const img = art.raw?.['muse_mark'], ms = 190; if (img) ctx.glow('me', 24, () => { const g = ctx.g; g.save(); g.globalAlpha = 0.92; g.drawImage(img, cx - ms / 2, 400 - ms / 2, ms, ms); g.restore(); }, 0.45); }
         const ready = str === QUESTION;
         const box = composer(ctx, { ...L.composer, y: 610 }, { text: str, placeholder: script.composer_placeholder ?? '', t: del ? 0 : t, focus: 1, send: ready ? 'ready' : 'idle', size: 34 });
         // each keystroke leaves a short cream tick under the caret, so the typing has weight
@@ -124,7 +129,7 @@ export function titleShots(env) {
         room(ctx, { dim: 0.42, t });
         figure(ctx, 0.75 * a);
         windowFrame(ctx, L, { glass: 0.82, alpha: 0.35 + 0.65 * a });
-        sidebar(ctx, L, { t, items: script.sidebar ?? [], presence: 'online' });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: script.sidebar ?? [], presence: 'online' });
         header(ctx, L, { t, title: 'New conversation', presence: 'online' });
         const th = { ...L.thread, h: L.thread.h };
         const items = drawThread(ctx, th, msgs().slice(0, 1), t, { alpha: a });

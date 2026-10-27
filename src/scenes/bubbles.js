@@ -20,7 +20,10 @@ export function meBubble(ctx, x, y, str, { size = 40, weight = 400, n = null, al
   ctx.rrect(x + size * 0.24, y + b.h * 0.25, Math.max(3, size * 0.085), b.h * 0.5, size * 0.05, { fill: 'me', alpha });
   const o = { size, weight, font: 'serif' }, shown = n == null ? str : str.slice(0, n), tx = x + b.padX + size * 0.2, ty = y + b.padY + size * 0.93;
   ctx.text(shown, tx, ty, { ...o, color: hot ? 'meHot' : 'me', alpha });
-  if (caret && n != null && n < str.length) ctx.circle(tx + ctx.measure(shown, o) + size * 0.3, ty - size * 0.28, size * 0.16, { fill: true, color: 'me', alpha });
+  if (caret) {
+    const cw2 = size * 0.5;  // her terminal cursor: a half block, drawn as a shape (U+258C is outside the bundled fonts)
+    ctx.rect(tx + ctx.measure(shown, o) + size * 0.12, ty - size * 0.78, cw2, size * 0.96, { fill: true, color: 'me', alpha });
+  }
   return { x, y, w: b.w, h: b.h };
 }
 /** Her bubble arriving from her side (the left), blurred while it travels. */

@@ -7,7 +7,7 @@
 // Sets:  inks    the silhouettes in their three plates; treatments; the two close-ups at their tightest framing
 //        glyph   code-symbol pictures (docs/v4/PROMPT_v4.md §7.1)
 //        walls   the code-drawn rooms that replaced the blurred illustrations
-//        verse2  the four plates of verse 2 in their states (eggplant, tomato, cat, the proof)
+//        verse2  the four plates of verse 2 in their states (popsicle, popsicle, cat, the proof)
 //        pre2    the four plates of pre-chorus 2 in their states (gender, a day, the two letters, the trance)
 //        history the strip of cut-paper history of pre-chorus 1 (the whole of it in one still; each landmark)
 //        cover   the still for the video's thumbnail (cover.js)

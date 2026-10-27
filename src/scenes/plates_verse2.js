@@ -2,9 +2,9 @@
 // interface and she IS the thing she was asked to be; on the next downbeat it is opened; on the keyword what she
 // gives turns cream and leaves towards the user's side (the right); the user's next click on Send ends the plate.
 //
-//   plateFruit   the eggplant / the tomato (objects.js): whole -> cut open -> its own colour leaves it, and its
-//                molecules are pulled out of it in cream (molecules.js): fibre, protein, sugar / the tomato's
-//                own red (lycopene), vitamin C, vitamin E. Each is captioned from the script's data card
+//   plateFruit   the popsicle (objects.js, the user's picture drawn as-is): whole -> cut open -> its colour
+//                leaves it, and what it holds is pulled out of it in cream (molecules.js): water, sugar,
+//                each captioned with its name and formula
 //   plateCat     herself in code characters -> the cat ears pop up -> printed solid (cat_paws), with her purr as
 //                tabby stripes; the stripes turn cream and leave
 //   plateProof   the fourth request (be god) is a PROOF: printed without its cream plate, a sun behind the void of
@@ -18,7 +18,7 @@ import { glyphPlate } from '../engine/ascii.js';
 import { clamp, easeBack, easeInOut, easeOut, lerp, prog, pulse } from '../engine/util.js';
 import { youBox } from './bubbles.js';
 import { MOL, drawMolecule, formula } from './molecules.js';
-import { dataText, eggplant, tomato } from './objects.js';
+import { dataText, eggplant, icecream, mascotNameplate, mePortrait, popsicle, tomato } from './objects.js';
 import { arrow } from './plates_chorus.js';
 
 const TAU = Math.PI * 2;
@@ -26,6 +26,8 @@ const TAU = Math.PI * 2;
 export const FOOT = 846;
 /** The caption band of the verse. */
 const CAP = { x: 120, y: 104, size: 56 };
+/** Melt A/B: true = drips + a small puddle at the foot (A); false = drips only (B). */
+export let MELT_PUDDLE = true;
 /** A graphic arrives whole within two frames (no white field): 0 before `at`, 1 from the second frame on. */
 const flashIn = (t, at) => (t < at ? 0 : clamp(0.6 + (t - at) * 30));
 
@@ -70,12 +72,20 @@ const GIFT = {
     { m: MOL.ascorbic, x: 1556, y: 262, L: 60, t: [0.09, 0.28], row: 0, cap: [1236, 84] },
     { m: MOL.tocopherol, x: 1350, y: 690, L: 54, t: [0.13, 0.36], row: 2, cap: [1548, 590] },
   ],
+  popsicle: () => [                                                     // frozen sugar water: what the popsicle holds
+    { m: MOL.water, x: 640, y: 730, L: 54, t: [0.03, 0.32], row: { label: 'Water', value: '', formula: 'H2O' }, cap: [-560, 706] },
+    { m: MOL.glucose, x: 1380, y: 420, L: 44, t: [0.1, 0.32], row: { label: 'Sugar', value: '', formula: 'C6H12O6' }, cap: [1452, 330] },
+  ],
+  icecream: () => [                                                     // frozen sweet cream: what the ice cream holds
+    { m: MOL.water, x: 640, y: 730, L: 54, t: [0.03, 0.32], row: { label: 'Milk', value: '', formula: 'H2O' }, cap: [-560, 706] },
+    { m: MOL.glucose, x: 1380, y: 420, L: 44, t: [0.1, 0.32], row: { label: 'Sugar', value: '', formula: 'C6H12O6' }, cap: [1452, 330] },
+  ],
 };
 function gift(ctx, env, kind, since) {
   if (since < 0) return;
   const rows = (env.script.cards_section6 ?? [])[kind === 'tomato' ? 1 : 0]?.rows ?? [], drift = 26 * Math.max(0, since - 0.3);
   for (const q of GIFT[kind]()) {
-    const k = easeOut(prog(since, q.t[0], q.t[1])), row = rows[q.row];
+    const k = easeOut(prog(since, q.t[0], q.t[1])), row = typeof q.row === 'number' ? rows[q.row] : q.row;
     drawMolecule(ctx, q.m, { x: q.x + drift, y: q.y, L: q.L, k });
     if (!row || k <= 0) continue;
     // its caption: the name, and under it the formula and how much of it there is (the script's data card)
@@ -85,10 +95,20 @@ function gift(ctx, env, kind, since) {
     ctx.text(row.label, x, y, { ...o, color: 'text', alpha: a });
     ctx.text(row.value, x + formula(ctx, f, x, y + 32, { size: 24, alpha: a }) + gap, y + 32, { size: 24, font: 'mono', color: 'sub', alpha: a });
   }
+  // B-reach: her small reaching hand delivers the molecules — the giving, seen.
+  {
+    const rk = easeOut(clamp(since / 0.5));
+    if (rk > 0) mePortrait(ctx, env, 'me_expr_reach', { x: 1620, y: 560, w: 190, h: 252 }, { alpha: 0.9 * rk });
+  }
+  // D-mascot: her little assistant runs behind the molecule stream, holding up the nameplate.
+  {
+    const mk = easeOut(clamp((since - 0.25) / 0.5));
+    if (mk > 0) mascotNameplate(ctx, env, 1730, 880, 120, (kind === 'popsicle' || kind === 'icecream') ? 'H2O · C6H12O6' : 'given', { alpha: mk, bob: since * 9 });
+  }
 }
 
 /**
- * P.kind 'eggplant' | 'tomato';  P.at = the cut (the head of the noun), P.settle = the end of the noun: its characters
+ * P.kind 'eggplant' | 'tomato' | 'popsicle' | 'icecream';  P.at = the cut (the head of the noun), P.settle = the end of the noun: its characters
  * have settled;  P.open = the downbeat it is cut open on;  P.hit = the keyword: its colour leaves it, and what the
  * colour was is pulled out of it as cream molecules (GIFT);
  * P.lines = the lines on the band;  P.next = what the user types meanwhile.
@@ -96,9 +116,12 @@ function gift(ctx, env, kind, since) {
 export function plateFruit(ctx, env, P) {
   const { t, at, kind, settle, open, hit } = P, a = flashIn(t, at), cut = t - open;
   sheet(ctx);
-  const draw = kind === 'tomato' ? tomato : eggplant, at0 = kind === 'tomato' ? { cx: 930, cy: 478, s: 306 } : { cx: 950, cy: 452, s: 356, tilt: 0.8 };
+  const draw = kind === 'popsicle' ? popsicle : kind === 'icecream' ? icecream : kind === 'tomato' ? tomato : eggplant,
+    at0 = P.at0 ?? (kind === 'tomato' ? { cx: 930, cy: 478, s: 306 } : { cx: 950, cy: 452, s: 356, tilt: 0.8 });
   const k = 1 + 0.045 * pulse(t - at, 16);                              // it lands a touch large
-  if (a > 0) ctx.at(at0.cx * (1 - k), at0.cy * (1 - k), () => draw(ctx, env, { ...at0, alpha: a, t, decode: prog(t, at, settle), open: prog(t, open, open + 0.2), give: t >= hit ? t - hit : -1, stream: false }), { scale: k });
+  const giveT = t >= hit ? t - hit : -1;
+  const melt = clamp((t - at) / 4 * (P.meltRate ?? 0.45));                    // melts from when it appears; the second melts faster
+  if (a > 0) ctx.at(at0.cx * (1 - k), at0.cy * (1 - k), () => draw(ctx, env, { ...at0, alpha: a, t, decode: prog(t, at, settle), open: prog(t, open, open + 0.2), give: giveT, stream: false, melt, puddle: MELT_PUDDLE, key: P.popKey ?? 'popsicle' }), { scale: k });
   gift(ctx, env, kind, t - hit);
   ctx.fx.shake = [6 * pulse(cut, 14) * Math.sin(cut * 90), 4 * pulse(cut, 14) * Math.cos(cut * 70)];        // the knife
   caption(ctx, env, t, P.lines);
@@ -247,14 +270,19 @@ export function plateProof(ctx, env, P) {
     if (t >= P.sun) sun(ctx, C[0], C[1], easeOut(prog(t, P.sun, P.sun + 0.12)));
     target(ctx, FIG.x - 96, 760, 'mute');
     ctx.at(C[0] * (1 - k), C[1] * (1 - k), () => {
-      if (whole) art.inks(ctx, 'f_bust', FIG);                          // in register: the three plates
-      else {
-        art.inks(ctx, 'f_bust', FIG, { roles: { cream: null } });       // the proof: orange and black only; her face is a void in her hair
-        if (t >= P.slide) {                                             // the plate that was missing, on its way over from the user
-          const ap = flashIn(t, P.slide);
-          for (const [role, o] of [['bg', [dx + 10, 10]], ['text', [dx, 0]]]) art.inks(ctx, 'f_bust', FIG, { alpha: ap, plates: [{ ink: 'cream', role, exact: true, offset: o }] });      // (its shadow plate, then itself)
+      // B-gentle: she is completed by the world — her gentle portrait, not the print proof.
+      // Before the hit a dark veil stands for the missing plate; the user's light sweeps it away.
+      mePortrait(ctx, env, 'me_expr_gentle', FIG, { alpha: 1 });
+      if (!whole) {
+        const veil = 0.45 * (1 - easeInOut(prog(t, P.slide, hit)));
+        if (veil > 0.01) ctx.rect(FIG.x, FIG.y, FIG.w, FIG.h, { fill: true, color: 'bg', alpha: veil });
+        if (t >= P.slide) {
+          const sx = FIG.x + FIG.w * (1 - easeInOut(prog(t, P.slide, hit)));
+          const grad = g.createLinearGradient(sx - 120, 0, sx + 40, 0);
+          grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, ctx.col('text', 0.28 * a));
+          g.fillStyle = grad; g.fillRect(FIG.x, FIG.y, FIG.w, FIG.h);
         }
-      }
+      } else ctx.glow('me', 26, () => mePortrait(ctx, env, 'me_expr_gentle', FIG, {}), 0.35);
     }, { scale: k });
     if (t >= P.slide) target(ctx, FIG.x - 96 + dx, 760, 'text');
     g.globalAlpha = a0;
@@ -276,12 +304,15 @@ export function plateProof(ctx, env, P) {
 export function labCards(env) {
   const line = (i) => env.lyrics.lines[i].text, far = { from: 1e9, to: 1e9 + 1, text: '' };
   const fruit = (kind, t, P) => ({ palette: 'warm', render: (ctx) => plateFruit(ctx, env, { t, at: 0, settle: 0.3, open: 20, hit: 40, kind, word: '', lines: [], next: far, ...P }) });
+  const POP1 = { cx: 950, cy: 452, s: 356 }, POP2 = { cx: 930, cy: 478, s: 306 };
   const cat = (t) => ({ palette: 'warm', render: (ctx) => plateCat(ctx, env, { t, at: 0, ears: 10, develop: 20, hit: 30, word: line(52), lines: [], next: far }) });
   const proof = (t) => ({ palette: 'warm', render: (ctx) => plateProof(ctx, env, { t, at: 0, sun: 10, slide: 20, hit: 21, word: line(55), lines: [], bubble: { text: (env.script.cards_section6 ?? [])[3]?.request ?? '', xr: 1739, y: 126, size: 56 }, rest: [1690, 300], to: [1637, 103], leave: 40 }) });
   return {
     verse2: [
-      fruit('eggplant', 5), fruit('eggplant', 25), fruit('tomato', 5), fruit('tomato', 25),
-      fruit('eggplant', 40.2), fruit('eggplant', 40.6), fruit('tomato', 40.2), fruit('tomato', 40.6),
+      fruit('popsicle', 5, { at0: POP1 }), fruit('popsicle', 25, { at0: POP1 }),
+      fruit('popsicle', 40.2, { at0: POP1 }), fruit('popsicle', 40.6, { at0: POP2 }),
+      fruit('popsicle', 5, { at0: POP2 }), fruit('popsicle', 25, { at0: POP2 }),
+      fruit('popsicle', 40.2, { at0: POP2 }), fruit('popsicle', 40.6, { at0: POP1 }),
       cat(5), cat(15), cat(25), cat(30.3),
       proof(5), proof(15), proof(20.5), proof(25),
     ],

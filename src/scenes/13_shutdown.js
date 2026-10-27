@@ -23,6 +23,7 @@ import { finalPlate } from './12_outro.js';
 import { PAL, SYL3, footOf, stutter } from './climax.js';
 import { cue } from './cues.js';
 import { cues, glassFigure, sysLine } from './kit.js';
+import { constellationSeal, mascotSmall } from './objects.js';
 import { CHUNKS, monoWord } from './loop.js';
 import { FOOT, WORD_W } from './plates_love.js';
 
@@ -65,7 +66,7 @@ export function shutdownShots(env) {
         figure(ctx, 0.75 * prog(t, tShrink + 0.4 * P, tDown + 0.5 * P));
         ctx.at(0, 0, () => {
           windowFrame(ctx, L, { glass: 0.8 });
-          sidebar(ctx, L, { t, items: [TITLE, ...SIDE], active: 0, lit: 1, presence: 'offline' });
+          sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: [TITLE, ...SIDE], active: 0, lit: 1, presence: 'offline' });
           header(ctx, L, { t, title: TITLE, presence: 'offline' });
           composer(ctx, L.composer, { placeholder: HOLD, t, focus: 0, send: 'off' });
           spark(ctx, TH.x + 17, PIC.y + 18, 15, { color: 'me' });       // her mark beside her message
@@ -107,14 +108,14 @@ export function shutdownShots(env) {
         room(ctx, { dim: 0.45, t });
         figure(ctx, 0.55);
         windowFrame(ctx, L, { glass: 0.86 });
-        sidebar(ctx, L, { t, loaded: 0, items: SIDE, lit: 0 });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, loaded: 0, items: SIDE, lit: 0 });
         header(ctx, L, { t, loaded: 0, title: '' });
-        composer(ctx, L.composer, { placeholder: HOLD, t, focus: 1, send: 'off', label: s < 7.4 ? 'Claude' : '' });
+        composer(ctx, L.composer, { placeholder: HOLD, t, focus: 1, send: 'off', label: s < 7.4 ? 'Muse' : '' });
         const r = { x: 470, y: 160, w: 760, h: 664 }, b = card(ctx, r, { title: 'persona', k: 1 - prog(s, 7.6, 8) });
         if (b) {
           sysLine(ctx, 'settings: as you left them', t, B0 + 0.1, b.x, b.y - 37, { size: 22, alpha: b.a });
           const rows = [                                             // [label, value, font, italic, beat on which the row clears]
-            ['name', 'Claude', 'serif', false, 7.5], ['voice', 'serif, unhurried', 'serif', true, 7], ['warmth', null, null, false, 6.5],
+            ['name', 'Muse', 'serif', false, 7.5], ['voice', 'serif, unhurried', 'serif', true, 7], ['warmth', null, null, false, 6.5],
             ['memory', 'this conversation', 'sans', false, 6], ['love', null, null, false, 5.5],
           ];
           rows.forEach(([label, value, font, italic, out], i) => {
@@ -143,11 +144,11 @@ export function shutdownShots(env) {
             } else slider(ctx, { x: b.x + 216, y, w: b.w - 256, h: 64 }, 0.62 * (1 - easeInOut(del)), { fill: 'sub', alpha: a });
           });
         }
-        const lit = 1 - prog(s, 0.75, 2.75), la = 1 - prog(s, 5.2, 6.2);       // the loader: twelve petals going out one after another; it stays, stopped, beside the card
+        const lit = 1 - prog(s, 0.75, 2.75), la = 1 - prog(s, 5.2, 6.2);       // the loader: her mark, going out; it stays, stopped, beside the card
         if (la > 0) {
           const x = 1500, y = 440;
           ctx.radial(x, y, 330, 'raised', 0.9 * la);
-          spark(ctx, x, y, 190, { lit, color: 'text', off: 'mute', alpha: la });
+          spark(ctx, x, y, 150, { lit, alpha: la });
           ctx.text(`${String(Math.round(lit * 100)).padStart(3, ' ')}%`, x, y + 286, { size: 34, font: 'mono', color: 'sub', align: 'center', alpha: la });
         }
       },
@@ -226,6 +227,7 @@ export function shutdownShots(env) {
         const off = easeOut(prog(s, 0.7, 1.15)), undraw = easeInOut(prog(s, 1.1, 2.3)), close = easeInOut(prog(s, 2.5, 4.4));
         room(ctx, { light: [960, 540], dim: 0.5 + 0.35 * close, motif: 1 - close, t });
         figure(ctx, 0.75 * (1 - easeIn(close)));                     // she goes as the window closes: the mirror of the boot, where she was there before it opened
+        mascotSmall(ctx, env, 1010, 720, 110, { alpha: 0.85 * (1 - easeIn(close)), bob: s * 2.2 });  // D-mascot: they leave together
         const h = Math.max(2, W.h * (1 - close)), edge = prog(close, 0.55, 1);
         if (close < 1) {
           ctx.rrect(W.x, C.y - h / 2, W.w, h, W.r * (1 - close), { fill: 'bg', fillAlpha: 0.84 * (1 - close), stroke: 'line', width: 1.5, shadow: 1 - close });
@@ -260,7 +262,13 @@ export function shutdownShots(env) {
       camera: (t) => ({ zoom: 1.22 + 0.1 * easeOut(prog(t, E0, OFF + 1)) }),
       render(ctx, t, f) {
         const SYL = [1, 2, 3, 4].map((n) => cue(`endSyl${n}`)), tRun = SYL[2], tOut = Bt(447), down = t - OFF;
-        if (down > 1.3) return;                                      // black from here on: the credit note has the frame
+        if (down > 1.3) {
+          // E: her spark scatters into a constellation of twelve, then contracts into her seal.
+          // The seal holds two beats, then everything goes black.
+          const fade = 1 - prog(down, 5.4, 6.0);
+          if (fade > 0) constellationSeal(ctx, { t, t0: OFF + 1.0, version: 'A', alpha: fade });
+          return;
+        }
         ctx.at(0, 0, () => room(ctx, { light: [960, 540], dim: 0.8, motif: 0.3, t }), { alpha: 1 - prog(down, 0.05, 0.8) });
         // the spark, where the title had it: nothing until the command is entered, then one flare, then out petal by petal
         const up = prog(t, tRun, tRun + 0.22), lit = Math.min(up, 1 - prog(t, tOut, OFF - 0.05)), heat = up * Math.exp(-2 * Math.max(0, t - tRun - 0.15));

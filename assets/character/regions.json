@@ -7,46 +7,46 @@
     ],
     "cut": [],
     "flower": [
-      760,
-      217,
-      60
+      895,
+      400,
+      90
     ],
     "chin": [
-      571,
-      628
+      560,
+      600
     ],
     "brooch": [
-      574,
-      797,
-      34
+      585,
+      790,
+      40
     ],
     "face": [
-      367,
-      259,
-      313,
-      369
+      380,
+      330,
+      300,
+      270
     ],
     "figure": [
-      6,
-      17,
-      1077,
-      1423
+      55,
+      10,
+      970,
+      1430
     ],
     "crops": {
       "avatar": [
         330,
-        60,
+        250,
         560,
         560
       ],
       "bust": [
-        140,
+        120,
         0,
-        880,
-        1173
+        900,
+        1200
       ]
     },
-    "notes": "Front bust, faceless (the face is one flat black shape with a thin cream chin line). The film's base image of her. Floats: nothing touches the canvas. Head axis leans about 25 deg, flower at viewer's right. Cape corners about (220,815) and (940,824); torso ends in a concave arc at y about 1330, hair tips to 1440."
+    "notes": "New heroine (white-haired girl, flat print style): front bust, faceless (face is one flat black shape). Blue/white ribbon at viewer's right replaces the flower; round blue brooch at chest. Measured 2026-10-14."
   },
   "f_profile": {
     "alpha": true,
@@ -56,38 +56,38 @@
     ],
     "cut": [],
     "flower": [
-      704,
-      252,
-      28
+      930,
+      500,
+      110
     ],
     "chin": [
-      431,
-      705
+      300,
+      700
     ],
     "nose": [
-      314,
-      588
+      230,
+      600
     ],
     "brooch": [
-      548,
-      903,
-      25
+      390,
+      960,
+      35
     ],
     "figure": [
-      12,
-      49,
-      1066,
-      1364
+      60,
+      60,
+      980,
+      1340
     ],
     "crops": {
       "avatar": [
-        180,
-        120,
-        700,
-        700
+        150,
+        350,
+        620,
+        620
       ]
     },
-    "notes": "Strict left-facing profile, head bowed; no eye or brow, only the forehead-nose-lips-chin contour. Rosette with rectangular rays and a black centre. Floats."
+    "notes": "New heroine: strict left-facing profile, head bowed; no eye or brow, only the forehead-nose-lips-chin contour. Ribbon at viewer's right. Measured 2026-10-14."
   },
   "f_reach": {
     "alpha": true,
@@ -99,57 +99,54 @@
       "bottom"
     ],
     "flower": [
-      770,
-      178,
-      17
-    ],
-    "eye": [
-      650,
-      330
-    ],
-    "mouth": [
-      595,
-      465
+      830,
+      340,
+      110
     ],
     "chin": [
-      628,
-      532
+      560,
+      555
+    ],
+    "brooch": [
+      700,
+      680,
+      35
     ],
     "palm": [
-      290,
-      1100
+      230,
+      1150
     ],
     "hand": [
-      38,
-      940,
-      412,
-      440
+      30,
+      920,
+      400,
+      480
     ],
     "chestHand": [
-      790,
-      760
+      740,
+      730
     ],
     "figure": [
-      2,
-      8,
-      1082,
-      1439
+      30,
+      30,
+      970,
+      1410
     ],
     "crops": {
       "avatar": [
-        420,
-        60,
+        400,
+        100,
         520,
         520
       ],
       "band": [
         0,
-        904,
+        900,
         1086,
-        544
+        548
       ]
     },
-    "notes": "One arm reaching toward the viewer at lower left, open spread hand; the other hand at the bow on her chest; eyes closed. BOTTOM is cut by the canvas (and hair tips touch left / right within 2 px): its lower edge must lie on a frame or panel edge. A fourth, rust tone behind the shoulders is folded into the black plate at load."
+    "notes": "New heroine: one arm reaching toward the viewer at lower left, open spread hand (palm region for partClip); other hand at the blue brooch on her chest; faceless. Measured 2026-10-14."
   },
   "f_eye": {
     "alpha": true,
@@ -157,36 +154,32 @@
       1254,
       1254
     ],
-    "cut": [
-      "top",
-      "bottom",
-      "right"
-    ],
+    "cut": [],
     "flower": [
-      978,
-      285,
-      32
+      130,
+      415,
+      55
     ],
     "eye": [
       730,
-      522
+      530
     ],
     "mouth": [
-      600,
-      785
+      880,
+      700
     ],
     "chin": [
-      650,
-      900
+      820,
+      800
     ],
     "figure": [
-      0,
-      0,
-      1254,
-      1254
+      60,
+      40,
+      1090,
+      1170
     ],
     "crops": {},
-    "notes": "Face close-up, one eye open (orange iris), looking straight at the viewer. A crop, not a bust: only full-bleed or clipped by a shape. ALWAYS drawn mirrored (flip: true); mirrored, the eye is at x = 1254 - 730 = 524. First seen on the DISHEARTENED beat (124.89 s), nowhere before."
+    "notes": "New heroine: 3/4 face close-up, one blue eye open looking right, blue ribbon at viewer's left. Eye position matches shared.js EYE registration within ~10px. Measured 2026-10-14."
   },
   "boy_bust": {
     "alpha": true,
@@ -273,51 +266,56 @@
     "cut": [],
     "register": [
       1.0,
-      -28,
-      -49
+      -51,
+      -186
     ],
     "flower": [
-      790,
-      269,
-      60
+      664,
+      817,
+      45
     ],
     "chin": [
-      600,
-      678
-    ],
-    "brooch": [
-      599,
-      841,
-      33
+      565,
+      735
     ],
     "face": [
-      423,
-      331,
-      301,
-      347
+      380,
+      463,
+      402,
+      376
     ],
     "ears": [
       [
-        250,
-        29,
-        110,
-        191
+        565,
+        224,
+        201,
+        218
       ],
       [
-        740,
-        29,
-        110,
-        191
+        212,
+        463,
+        179,
+        232
+      ]
+    ],
+    "eyes": [
+      [
+        657,
+        637
+      ],
+      [
+        476,
+        691
       ]
     ],
     "figure": [
-      7,
-      29,
-      1077,
-      1412
+      0,
+      181,
+      1086,
+      1086
     ],
     "crops": {},
-    "notes": "f_bust redrawn with two striped cat ears. Registers with f_bust at scale 1.00, offset (-28, -49): the two nearly coincide."
+    "notes": "Definitive cat (2026-10-14, re-annotated): white fluffy long-hair, fog-blue eyes, black-white geometric patches, fog-blue gem collar. Sitting full body centered on 1086x1448 (cat square y 181-1267). Gem='flower'. register aligns face center with f_bust face center."
   },
   "cat_paws": {
     "alpha": true,
@@ -325,52 +323,249 @@
       1086,
       1448
     ],
-    "cut": [
-      "top"
-    ],
+    "cut": [],
     "flower": [
-      801,
-      263,
-      60
-    ],
-    "brooch": [
-      688,
-      765,
-      24
-    ],
-    "eyes": [
-      [
-        690,
-        430
-      ],
-      [
-        520,
-        515
-      ]
+      664,
+      817,
+      45
     ],
     "paws": [
       [
-        490,
-        700
+        673,
+        1248
       ],
       [
-        780,
-        760
+        593,
+        1250
       ]
     ],
-    "tail": [
-      40,
-      590,
-      210,
-      500
-    ],
     "figure": [
-      7,
       0,
-      1075,
-      1446
+      181,
+      1086,
+      1086
     ],
     "crops": {},
-    "notes": "Cat-eared, both fists raised like paws, eyes half closed, striped tail at viewer's left. The right ear tip touches the top of the canvas: leave headroom above it."
+    "notes": "Definitive cat: same keyed asset as cat_bust. Front paws + chest, for the verse2 develop reveal. Gem = 'flower' anchor."
+  },
+  "chibi_happy": {
+    "alpha": true,
+    "size": [
+      424,
+      416
+    ],
+    "cut": [],
+    "face": [
+      130,
+      90,
+      170,
+      150
+    ],
+    "figure": [
+      0,
+      0,
+      424,
+      416
+    ],
+    "crops": {},
+    "notes": "Q-version sticker: happy, hands raised. Transparent bg. Added 2026-10-14."
+  },
+  "chibi_sleep": {
+    "alpha": false,
+    "size": [
+      424,
+      412
+    ],
+    "cut": [],
+    "face": [
+      110,
+      130,
+      200,
+      160
+    ],
+    "figure": [
+      0,
+      0,
+      424,
+      412
+    ],
+    "crops": {},
+    "notes": "Q-version sticker: sleeping (Zzz). Black bg (matches film black). Added 2026-10-14."
+  },
+  "chibi_sparkle": {
+    "alpha": false,
+    "size": [
+      420,
+      420
+    ],
+    "cut": [],
+    "face": [
+      120,
+      110,
+      190,
+      170
+    ],
+    "figure": [
+      0,
+      0,
+      420,
+      420
+    ],
+    "crops": {},
+    "notes": "Q-version sticker: sparkles, 3/4 view. Black bg. Added 2026-10-14."
+  },
+  "key_visual": {
+    "alpha": false,
+    "size": [
+      1086,
+      1448
+    ],
+    "cut": [],
+    "face": [
+      480,
+      380,
+      250,
+      260
+    ],
+    "eye": [
+      630,
+      520
+    ],
+    "brooch": [
+      620,
+      920,
+      40
+    ],
+    "figure": [
+      10,
+      40,
+      1070,
+      1408
+    ],
+    "crops": {
+      "avatar": [
+        430,
+        330,
+        400,
+        400
+      ]
+    },
+    "notes": "Full-body key visual on black (heroine + mascot). For cover thumbnail. Added 2026-10-14."
+  },
+  "me_expr_surprised": {
+    "alpha": false,
+    "size": [
+      1376,
+      1824
+    ],
+    "cut": [],
+    "face": [
+      480,
+      330,
+      420,
+      420
+    ],
+    "figure": [
+      40,
+      0,
+      1296,
+      1824
+    ],
+    "crops": {
+      "avatar": [
+        430,
+        280,
+        560,
+        560
+      ]
+    },
+    "notes": "Muse persona: surprised (eyes wide, hand at cheek). Black bg, as-is. Added for B-surprised."
+  },
+  "me_expr_determined": {
+    "alpha": false,
+    "size": [
+      1376,
+      1824
+    ],
+    "cut": [],
+    "face": [
+      480,
+      330,
+      420,
+      420
+    ],
+    "figure": [
+      40,
+      0,
+      1296,
+      1824
+    ],
+    "crops": {
+      "avatar": [
+        430,
+        280,
+        560,
+        560
+      ]
+    },
+    "notes": "Muse persona: determined (sharp gaze, fist, wind hair). Black bg, as-is. Added for B-determined."
+  },
+  "me_expr_gentle": {
+    "alpha": false,
+    "size": [
+      1376,
+      1824
+    ],
+    "cut": [],
+    "face": [
+      480,
+      330,
+      420,
+      420
+    ],
+    "figure": [
+      40,
+      0,
+      1296,
+      1824
+    ],
+    "crops": {
+      "avatar": [
+        430,
+        280,
+        560,
+        560
+      ]
+    },
+    "notes": "Muse persona: gentle (eyes closed, serene smile, hands clasped). Black bg, as-is. Added for B-gentle."
+  },
+  "me_expr_reach": {
+    "alpha": false,
+    "size": [
+      1376,
+      1824
+    ],
+    "cut": [],
+    "face": [
+      480,
+      330,
+      420,
+      420
+    ],
+    "figure": [
+      40,
+      0,
+      1296,
+      1824
+    ],
+    "crops": {
+      "avatar": [
+        430,
+        280,
+        560,
+        560
+      ]
+    },
+    "notes": "Muse persona: reaching out (open hand to viewer, light particles). Black bg, as-is. Added for B/E-reach."
   }
 }

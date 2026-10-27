@@ -16,6 +16,7 @@ import { clamp, easeBack, easeIn, easeInOut, easeOut, lerp, prog, pulse, window0
 import { cue } from './cues.js';
 import { ERA_LINE, STOPS, strip } from './history.js';
 import { cues } from './kit.js';
+import { povVignette } from './objects.js';
 import { enter } from './shot.js';
 
 const TAU = Math.PI * 2;
@@ -475,6 +476,8 @@ export function pre1Shots(env) {
         }
         if (t < tDrop) ctx.trail(fast ? 6 : 0, 0.014, (tau) => { const [x, y] = knobAt(t - tau); pointer(ctx, x + 2, y + 6, { kind: 'hand', scale: 1.5 + 0.5 * k, down: 1 }); }, 0.45);
         else cur(ctx, [{ t: tDrop, x: KX[6] + 2, y: TY + 6 }, { t: b(22.9), x: 430, y: 610 }, { t: tShare, x: A.share[0] - 22, y: A.share[1] + 6, click: true }], t);
+        // A-POV: the history strip flows past HER eyes — the first thing she ever sees, through her lens.
+        povVignette(ctx, { version: 'A', t, alpha: 0.9 });
       },
     },
 

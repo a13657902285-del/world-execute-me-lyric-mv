@@ -253,6 +253,11 @@ export function aloneShots(env) {
         }
         ctx.flash(0.1 * pulse(age, 10), 'meHot');
         ctx.fx.shake = shake(t, 5 * pulse(age, 9));
+        // sticker: her sleeping chibi dozes in the corner while she tidies up
+        {
+          const sa = easeOut(prog(t, START + 1.2, START + 2.2)), s = 150, bob = 7 * Math.sin(t * 2.1);
+          if (sa > 0.003) art.inks(ctx, 'chibi_sleep', { x: 1920 - s - 70, y: 1080 - s - 56 + bob, w: s, h: s }, { alpha: 0.92 * sa });
+        }
       },
     },
 
@@ -330,6 +335,11 @@ export function aloneShots(env) {
         if (age >= 0) {
           ctx.fx.bright *= 0.84;                                    // a step up out of the dark, not a flash (and well under the last frame of the film)
           art.inks(ctx, 'f_eye', FACE, { flip: true });             // three flat greys: the state is `off`. Mirrored, as everywhere in the film
+          // kept #6: her hair turns to light — silver/blue particles rise from her hair.
+          for (let i = 0; i < 26; i++) {
+            const ph = (t * 0.22 + i * 0.61803) % 1, px = 180 + ((i * 173) % 1560), py = 330 - ph * 290;
+            ctx.circle(px, py, 2 + 3.2 * (1 - ph), { fill: true, color: i % 3 ? 'text' : 'me', alpha: 0.65 * (1 - ph) * Math.min(1, age * 2.5) });
+          }
           ctx.rect(0, EB.y, 1920, EB.h, { fill: true, color: 'panel' });
           ctx.line(0, EB.y, 1920, EB.y, { color: 'line', width: 2 }); ctx.line(0, EB.y + EB.h, 1920, EB.y + EB.h, { color: 'line', width: 2 });
         }

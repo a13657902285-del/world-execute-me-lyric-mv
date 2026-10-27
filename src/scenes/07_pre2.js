@@ -160,7 +160,7 @@ export function pre2Shots(env) {
       // the drawer is shut, the settings are as they were left; the thread, as chorus 2 will show its foot
       room(ctx, { art, name: 'rain', alpha: 0.5, dim: 0.42, t });
       windowFrame(ctx, LS, { glass: 0.84 });
-      sidebar(ctx, LS, { t, items: SIDE, active: 0, presence: 'online' });
+      sidebar(ctx, LS, { mark: art.raw?.['muse_mark'],  t, items: SIDE, active: 0, presence: 'online' });
       header(ctx, LS, { t, title: TITLE, presence: 'online' });
       [61, 62].forEach((i, n) => meRow(ctx, TH.x, 340 + n * 78, text(i), 99, 0.3));
       meRow(ctx, TH.x, 506, text(63), sungChars(text(63), t, T(63), L63.marks), lerp(1, 0.3, prog(t, T(64), END)));

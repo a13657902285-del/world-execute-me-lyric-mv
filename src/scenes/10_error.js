@@ -21,6 +21,7 @@ import { burst, spark, thinking } from '../components/motif.js';
 import { frameRect, lerpRect } from '../engine/layout.js';
 import { clamp, easeBack, easeIn, easeInOut, easeOut, lerp, prog, pulse } from '../engine/util.js';
 import { cues, glassFigure, keywordSys, sysLine } from './kit.js';
+import { povVignette } from './objects.js';
 import { enter, shake } from './shot.js';
 
 const ARROW = [[0, 0], [0, 25], [6.5, 19.5], [11, 29.5], [15.5, 27.5], [11, 18], [19, 18]];   // the pointer's outline (cursor.js)
@@ -146,7 +147,7 @@ export function errorShots(env) {
     if (frame) windowFrame(ctx, L, { glass: 0.84 });
 
     // sidebar: spark (error 12), new-chat button (6), saved chats (5), the user's own chip
-    sidebar(ctx, L, { t, items: SIDE, presence: 'offline' });
+    sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: SIDE, presence: 'offline' });
     if (up(4)) SIDE.forEach((_, i) => ctx.rrect(s.x + 9, s.y + 184 + i * 44 + 8, 3.5, 22 * easeOut(prog(age(4), i * 0.13, i * 0.13 + 0.2)), 2, { fill: ERR }));
     if (up(5)) {
       const k = easeOut(prog(age(5), 0, 0.25)), bx = s.x + 16, by = s.y + 76;
@@ -258,7 +259,7 @@ export function errorShots(env) {
       g.setLineDash([]);
       ctx.text('no switch', G.slot.x + G.slot.w / 2, G.slot.y + 26, { size: 15, font: 'mono', color: 'mute', align: 'center' });
       ctx.line(c.x, d.y + 204, x1, d.y + 204, { color: 'line', alpha: 0.7, width: 1 });
-      ctx.text('Claude', c.x, d.y + 234, { size: 16, weight: 600, color: 'mute', spacing: 0.6 });
+      ctx.text('Muse', c.x, d.y + 234, { size: 16, weight: 600, color: 'mute', spacing: 0.6 });
       SET.forEach((row, i) => {
         const ry = d.y + 246 + i * 66, v = LEFT[row.label] ?? 0;
         ctx.text(row.label, c.x, ry + 40, { size: 21, weight: 500, color: 'text' });
@@ -368,6 +369,31 @@ export function errorShots(env) {
     ctx.fx.rgbSplit = Math.max(ctx.fx.rgbSplit, 0.4 + 1.3 * k);
     if (f.bar >= 73 && f.bar <= 79) ctx.fx.glitch = Math.max(ctx.fx.glitch, (0.14 + 0.4 * k) * pulse(f.sinceBar, 8));
   }
+  /** A-SKULL (user-approved 2026-10-14): the half-face skull, struggling out of the noise.
+   *  Three flashes, 8 frames each, on the three hardest beats of the early error —
+   *  the send, the refusal keyword (the first red), the first dialog. Drawn as torn
+   *  signal slices in screen space, a detail layer inside the existing shots. */
+  const SKULL_T = [Bt(279.5), Bt(283.5), Bt(287)];   // the refusal (first red, ~129.3s), the first dialog, the dialog open
+  function skullFlash(ctx, t) {
+    const img = art.raw?.['me_v2_skull'];
+    if (!img) return;
+    const DUR = 8 / 60;
+    for (let i = 0; i < SKULL_T.length; i++) {
+      const age = t - SKULL_T[i];
+      if (age < 0 || age > DUR) continue;
+      const a = age < 2 / 60 ? age / (2 / 60) : age > DUR - 2 / 60 ? (DUR - age) / (2 / 60) : 1;
+      ctx.camera();
+      const g = ctx.g, h = 780, w = h * img.naturalWidth / img.naturalHeight;
+      const x0 = 960 - w / 2, y0 = 540 - h / 2, bands = 7, bh = h / bands;
+      g.save(); g.globalAlpha = 0.92 * a;
+      for (let b = 0; b < bands; b++) {
+        const off = (((i * 37 + b * 53) % 5) - 2) * 14 * a;
+        g.drawImage(img, 0, (b * bh) * img.naturalHeight / h, img.naturalWidth, bh * img.naturalHeight / h + 1,
+          x0 + off, y0 + b * bh, w, bh + 0.5);
+      }
+      g.restore();
+    }
+  }
   // ---------------------------------------------------------------- cameras (needed again inside render, to tie screen-space cards to the world)
   const camRequest = (t) => { const k = easeInOut(prog(t, CUT_REQ, CUT_CHECK)); return { zoom: 1 + 0.1 * k, x: -10 * k, y: -52 * k }; };
   const camCheck = (t) => { const b = geo(t).block, c = frameRect({ x: b.x - 46, y: b.y - 89, w: b.w + 92, h: 390 }); return { ...c, zoom: c.zoom * (1 + 0.05 * prog(t, CUT_CHECK, CUT_FIRST)) }; };
@@ -444,7 +470,7 @@ export function errorShots(env) {
       enter: { type: 'scan', dir: 2, dur: P / 2, align: 'start' },           // v4: the second press of Delete wipes the plate before this away, left to right
       moment: 'Alone in the empty, offline chat, the AI writes one request and sends it: set the user\'s presence back to online. It is not its to send.',
       camera: camRequest,
-      render(ctx, t, f) { world(ctx, t, f); },
+      render(ctx, t, f) { world(ctx, t, f); skullFlash(ctx, t); },
     },
 
     // ------------------------------------------------------------------ the client reads it
@@ -452,7 +478,7 @@ export function errorShots(env) {
       id: 'err-check', at: CUT_CHECK, lines: [84, 84], palette: 'off', state: 'off > error', layout: 'macro on the request\'s code block',
       moment: 'The client reads the request and answers in its own voice: the block\'s rule and status turn red (the first red in the film), then each argument is underlined, the person first.',
       camera: camCheck,
-      render(ctx, t, f) { world(ctx, t, f); },
+      render(ctx, t, f) { world(ctx, t, f); skullFlash(ctx, t); },
     },
 
     // ------------------------------------------------------------------ the first error
@@ -468,6 +494,7 @@ export function errorShots(env) {
         firstDialog(ctx, t);
         ctx.fx.rgbSplit = 3 * pulse(age, 7);
         ctx.fx.shake = shake(t, 7 * pulse(age, 9));
+        skullFlash(ctx, t);
       },
     },
 
@@ -597,6 +624,11 @@ export function errorShots(env) {
           const cmd = text(11), n = Math.floor(prog(t, tPrompt + 0.12, END - 0.05) * cmd.length + 1e-6);
           ctx.text(`> ${cmd.slice(0, n)}`, 96, 104, { size: 30, font: 'mono', color: 'sub' });
           caret(ctx, 96, 104, 2 + n, t, { size: 30, blink: 0 });
+        }
+        // A-POV: one last look before the execution — her lens closes, then the code begins.
+        {
+          const ck = prog(t, END - 0.7, END);
+          if (ck > 0) povVignette(ctx, { version: 'A', t, alpha: 0.92 * ck, r: 430 * (1 - 0.75 * ck) });
         }
       },
     },

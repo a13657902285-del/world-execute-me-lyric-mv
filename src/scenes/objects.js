@@ -12,6 +12,7 @@
 //
 //   eggplant(ctx, env, { cx, cy, s, open, give, decode, t })      s = half its length
 //   tomato(ctx, env, { cx, cy, s, open, give, decode, t })        s = half its width
+//   popsicle(ctx, env, { cx, cy, s, open, give, t })              s = half its height; the user's picture, drawn as-is
 //
 // Pure functions of their arguments. Verse 2 (plates_verse2.js) is where they are used; lab set `glyph` shows them alone:
 //   node export/export.mjs --lab glyph --sheet out/chk_glyph.png --times 0,1,2,3,4,5,6 --cols 2 --width 1920 --height 1080
@@ -19,7 +20,7 @@ import { ground } from '../components/plate.js';
 import { sparkOutline } from '../components/motif.js';
 import { glyphPlate } from '../engine/ascii.js';
 import { rand } from '../engine/prng.js';
-import { clamp, easeOut, lerp } from '../engine/util.js';
+import { clamp, easeInOut, easeOut, lerp } from '../engine/util.js';
 
 const TAU = Math.PI * 2;
 
@@ -333,6 +334,188 @@ export function tomato(ctx, env, { cx = 960, cy = 540, s = 320, open = 0, give =
   return { hull: whole, top };
 }
 
+// ---------------------------------------------------------------------------------------------- popsicle
+// The user's replacement for the eggplant and the tomato of verse 2: a milk-white popsicle with a fog-blue band
+// and star sparkles on a wooden stick (assets/character/popsicle.png). It is drawn AS-IS: the picture is already
+// in the film's colours, so it takes none of the glyph-plate treatment, but it keeps the verse's three states:
+//   whole   the picture, one piece
+//   open    0..1: cut through the band: the top lifts off and back a little, the lower half sinks, the cut faces show
+//   give    seconds since it was given away (-1 = not yet): the picture fades and only its outline is left, one
+//           cut-paper line
+// Local frame: the picture spans -1..1 in both axes; s = half its height on screen.
+const POP_CUT = 0.02;                                                   // the knife goes through the blue band, level
+/** The picture's silhouette as a flat plate (for the shadow, out of register): tinted, cached per colour. */
+const popSilCache = new Map();
+function popSil(img, color) {
+  const key = `${img.src}|${color}`;
+  let c = popSilCache.get(key);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+    const x = c.getContext('2d');
+    x.drawImage(img, 0, 0);
+    x.globalCompositeOperation = 'source-in';
+    x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+    popSilCache.set(key, c);
+  }
+  return c;
+}
+
+export function popsicle(ctx, env, { cx = 960, cy = 540, s = 340, open = 0, give = -1, t = 0, alpha = 1, key = 'popsicle', melt = 0, puddle = false } = {}) {
+  const img = env.art.raw?.['popsicle'];
+  const g = ctx.g, a0 = g.globalAlpha, k = clamp(open), e = easeOut(k), gone = give < 0 ? 0 : clamp(give / 0.1);
+  if (!img) { return { hull: [], top: [cx, cy - s] }; }
+  const up = 0.22 * e, dn = 0.3 * e, turn = -0.06 * e;                   // the top lifts off and back a little; the lower half sinks
+  /** One of the two pieces: the picture (or its silhouette plate), clipped to its half, moved by (dx, dy, rot). */
+  const piece = (pic, y0, y1, dx, dy, rot) => {
+    g.save();
+    g.beginPath(); g.rect(cx - s - 3, cy + y0 * s - 3, 2 * s + 6, (y1 - y0) * s + 6); g.clip();
+    g.translate(cx + dx * s, cy + dy * s); g.rotate(rot); g.translate(-cx, -cy);
+    g.drawImage(pic, cx - s, cy - s, 2 * s, 2 * s);
+    g.restore();
+  };
+  const SH = [0.045 * s, 0.045 * s];
+  const sil = popSil(img, ctx.col('bg', 1));
+  g.globalAlpha = a0 * alpha;
+  // ---- shadow plate: the silhouette once more, flat, out of register (depth without a gradient)
+  g.save(); g.translate(SH[0], SH[1]);
+  piece(sil, -1, POP_CUT, 0, -up, turn); piece(sil, POP_CUT, 1, 0, dn, 0);
+  g.restore();
+  // ---- the two pieces of the picture
+  g.globalAlpha = a0 * alpha * (1 - gone);
+  piece(img, -1, POP_CUT, 0, -up, turn); piece(img, POP_CUT, 1, 0, dn, 0);
+  // ---- the cut faces: the frozen heart, one step lighter, on each piece where the knife went through
+  if (e > 0.02 && gone < 1) {
+    const rw = 0.335 * s, rh = Math.max(2, rw * 0.32 * e);
+    for (const [py, rot] of [[cy + POP_CUT * s - up * s, turn], [cy + POP_CUT * s + dn * s, 0]]) {
+      ctx.at(cx, py, () => {
+        g.beginPath(); g.ellipse(0, 0, rw, rh, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 1); g.fill();
+        g.lineWidth = Math.max(2, s * 0.008); g.strokeStyle = ctx.col('panel', 1); g.stroke();
+        g.fillStyle = ctx.col('meDim', 0.8);                                 // a few ice crystals in the heart
+        for (let i = 0; i < 7; i++) { const a = (i / 7) * TAU + 0.4; g.beginPath(); g.arc(Math.cos(a) * rw * 0.55, Math.sin(a) * rh * 0.5, Math.max(1.5, s * 0.006), 0, TAU); g.fill(); }
+      }, { rot });
+    }
+  }
+  // ---- given away: only its outline is left, one cut-paper line
+  if (gone > 0) {
+    const bx = 0.34 * s, sx = 0.10 * s, topY = cy - 0.78 * s, botY = cy + 0.30 * s, stickBot = cy + 0.80 * s;
+    g.beginPath();
+    g.moveTo(cx - bx, botY);
+    g.lineTo(cx - bx, topY + bx);
+    g.arc(cx, topY + bx, bx, Math.PI, 0);                               // the rounded top of the bar
+    g.lineTo(cx + bx, botY);
+    g.lineTo(cx + sx, botY);                                            // down the stick
+    g.lineTo(cx + sx, stickBot - sx);
+    g.arc(cx, stickBot - sx, sx, 0, Math.PI);                           // the rounded end of the stick
+    g.lineTo(cx - sx, botY);
+    g.closePath();
+    g.strokeStyle = ctx.col('text', gone); g.lineWidth = Math.max(3, s * 0.012); g.stroke();
+  }
+  // ---- melting: "if I were a popsicle" — short-lived, sweet. 2-3 code-drawn cream drops fall
+  // from the cut while it is being given; version A also leaves a small puddle at the foot of the stick.
+  const mk = clamp(melt);
+  if (mk > 0.01) {
+    for (let i = 0; i < 3; i++) {
+      const ph = (t * 0.6 + i * 0.37 + (key === 'popsicle2' ? 0.19 : 0)) % 1;
+      const dx = (i - 1) * 0.13 * s, dy = ph * ph * 0.5 * s;
+      const dr = Math.max(4, s * 0.035 * mk * (1 - ph * 0.3));
+      ctx.at(cx + dx, cy + 0.78 * s + dy, () => {
+        g.beginPath(); g.ellipse(0, 0, dr, dr * 1.45, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 0.85 * mk * alpha); g.fill();
+      });
+    }
+    if (puddle) {
+      const pw = 0.42 * s * mk;
+      ctx.at(cx, cy + 0.86 * s, () => {
+        g.beginPath(); g.ellipse(0, 0, pw, pw * 0.2, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 0.42 * mk * alpha); g.fill();
+      });
+    }
+  }
+  g.globalAlpha = a0;
+  const hull = [[cx - s, cy - s], [cx + s, cy - s], [cx + s, cy + s], [cx - s, cy + s]];
+  return { hull, top: [cx, cy - s] };
+}
+
+// ---------------------------------------------------------------------------------------------- icecream
+// Verse 2's second answer: the user asks again, so she is an ice cream cone this time — two milk-white scoops
+// with a fog-blue band and star sparkles in a waffle cone (assets/character/icecream.png). Same grammar as the
+// popsicle: drawn as-is, cut through between the scoops, its colour leaving as molecules on the keyword.
+// Local frame: the picture spans -1..1 in both axes; s = half its height on screen.
+const ICE_CUT = -0.22;                                                  // the knife goes through the neck between the scoops (measured)
+export function icecream(ctx, env, { cx = 960, cy = 540, s = 340, open = 0, give = -1, t = 0, alpha = 1, key = 'icecream', melt = 0, puddle = false } = {}) {
+  const img = env.art.raw?.['icecream'];
+  const g = ctx.g, a0 = g.globalAlpha, k = clamp(open), e = easeOut(k), gone = give < 0 ? 0 : clamp(give / 0.1);
+  if (!img) { return { hull: [], top: [cx, cy - s] }; }
+  const up = 0.24 * e, dn = 0.3 * e, turn = -0.07 * e;                  // the top scoop lifts off and back; the cone sinks
+  /** One of the two pieces: the picture (or its silhouette plate) as a rigid body — the clip moves with the
+      piece, so the scoop truly separates and the cut faces show in the gap. */
+  const piece = (pic, y0, y1, dx, dy, rot) => {
+    g.save();
+    g.translate(cx + dx * s, cy + dy * s); g.rotate(rot); g.translate(-cx, -cy);
+    g.beginPath(); g.rect(cx - s - 3, cy + y0 * s - 3, 2 * s + 6, (y1 - y0) * s + 6); g.clip();
+    g.drawImage(pic, cx - s, cy - s, 2 * s, 2 * s);
+    g.restore();
+  };
+  const SH = [0.045 * s, 0.045 * s];
+  const sil = popSil(img, ctx.col('bg', 1));
+  g.globalAlpha = a0 * alpha;
+  // ---- shadow plate: the silhouette once more, flat, out of register
+  g.save(); g.translate(SH[0], SH[1]);
+  piece(sil, -1, ICE_CUT, 0, -up, turn); piece(sil, ICE_CUT, 1, 0, dn, 0);
+  g.restore();
+  // ---- the two pieces of the picture
+  g.globalAlpha = a0 * alpha * (1 - gone);
+  piece(img, -1, ICE_CUT, 0, -up, turn); piece(img, ICE_CUT, 1, 0, dn, 0);
+  // ---- the cut faces: the creamy heart, one step lighter, on each piece where the knife went through
+  if (e > 0.02 && gone < 1) {
+    const rw = 0.22 * s, rh = Math.max(2, rw * 0.34 * e);
+    for (const [py, rot] of [[cy + ICE_CUT * s - up * s, turn], [cy + ICE_CUT * s + dn * s, 0]]) {
+      ctx.at(cx, py, () => {
+        g.beginPath(); g.ellipse(0, 0, rw, rh, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 1); g.fill();
+        g.lineWidth = Math.max(2, s * 0.008); g.strokeStyle = ctx.col('panel', 1); g.stroke();
+        g.fillStyle = ctx.col('meDim', 0.8);                                 // a few ice crystals in the heart
+        for (let i = 0; i < 7; i++) { const a = (i / 7) * TAU + 0.4; g.beginPath(); g.arc(Math.cos(a) * rw * 0.55, Math.sin(a) * rh * 0.5, Math.max(1.5, s * 0.006), 0, TAU); g.fill(); }
+      }, { rot });
+    }
+  }
+  // ---- given away: only its outline is left — two scoops and the cone, cut-paper lines
+  if (gone > 0) {
+    g.strokeStyle = ctx.col('text', gone); g.lineWidth = Math.max(3, s * 0.012);
+    g.beginPath(); g.arc(cx, cy - 0.56 * s, 0.23 * s, 0, TAU); g.stroke();   // the top scoop
+    g.beginPath(); g.arc(cx, cy - 0.12 * s, 0.24 * s, 0, TAU); g.stroke();   // the lower scoop
+    g.beginPath();                                                          // the cone
+    g.moveTo(cx - 0.19 * s, cy + 0.10 * s);
+    g.lineTo(cx, cy + 0.78 * s);
+    g.lineTo(cx + 0.19 * s, cy + 0.10 * s);
+    g.stroke();
+  }
+  // ---- melting: "if I were an ice cream" — cream drops fall from the cut while it is being given
+  const mk = clamp(melt);
+  if (mk > 0.01) {
+    for (let i = 0; i < 3; i++) {
+      const ph = (t * 0.6 + i * 0.37 + 0.31) % 1;
+      const dx = (i - 1) * 0.13 * s, dy = ph * ph * 0.5 * s;
+      const dr = Math.max(4, s * 0.035 * mk * (1 - ph * 0.3));
+      ctx.at(cx + dx, cy + 0.34 * s + dy, () => {
+        g.beginPath(); g.ellipse(0, 0, dr, dr * 1.45, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 0.85 * mk * alpha); g.fill();
+      });
+    }
+    if (puddle) {
+      const pw = 0.42 * s * mk;
+      ctx.at(cx, cy + 0.86 * s, () => {
+        g.beginPath(); g.ellipse(0, 0, pw, pw * 0.2, 0, 0, TAU);
+        g.fillStyle = ctx.col('text', 0.42 * mk * alpha); g.fill();
+      });
+    }
+  }
+  g.globalAlpha = a0;
+  const hull = [[cx - s, cy - s], [cx + s, cy - s], [cx + s, cy + s], [cx - s, cy + s]];
+  return { hull, top: [cx, cy - s] };
+}
+
 // ---------------------------------------------------------------------------------------------- check cards
 export function labCards(env) {
   const note = (ctx, str) => ctx.text(str, 60, 1040, { size: 24, font: 'mono', color: 'sub' });
@@ -366,4 +549,113 @@ export function labCards(env) {
       },
     ],
   };
+}
+
+// ---------------------------------------------------------------------------------------------- Muse persona helpers
+// The white-haired girl IS Muse (the user's definitive image). These are drawn AS-IS from art.raw
+// (no ink separation: the user's art style must stay exactly as sent).
+
+/** Her portrait, drawn as-is into dst. name = 'me_expr_surprised' | 'me_expr_determined' | 'me_expr_gentle' | 'me_expr_reach'. */
+export function mePortrait(ctx, env, name, dst, { alpha = 1, crop = null } = {}) {
+  const img = env.art.raw?.[name];
+  if (!img || alpha <= 0.003) return;
+  const g = ctx.g, a0 = g.globalAlpha;
+  g.globalAlpha = a0 * alpha;
+  if (crop) g.drawImage(img, crop.x, crop.y, crop.w, crop.h, dst.x, dst.y, dst.w, dst.h);
+  else g.drawImage(img, dst.x, dst.y, dst.w, dst.h);
+  g.globalAlpha = a0;
+}
+
+/**
+ * The POV lens: "the world through Muse's eyes". A circular lens vignette (black surround, silver
+ * concentric scale ring, crosshair, small ▌ at the bottom). Two versions for the A/B test:
+ *   'A' = full-circle vignette, strong (the whole frame is her field of view)
+ *   'B' = small circular viewfinder at the bottom-right, weak (a picture-in-picture of her gaze)
+ */
+export function povVignette(ctx, { version = 'A', alpha = 1, t = 0, r = 0 } = {}) {
+  if (alpha <= 0.003) return;
+  const g = ctx.g, a0 = g.globalAlpha;
+  g.globalAlpha = a0 * alpha;
+  const ring = (cx, cy, r) => {
+    g.save();                                                        // the dark surround: everything outside the circle
+    g.beginPath();
+    g.rect(0, 0, 1920, 1080); g.arc(cx, cy, r, 0, TAU, true);
+    g.fillStyle = ctx.col('bg', 0.8); g.fill('evenodd');
+    g.restore();
+    ctx.circle(cx, cy, r, { color: 'text', width: 3, alpha: 0.9 });          // the lens rim
+    ctx.circle(cx, cy, r * 0.93, { color: 'text', width: 1.5, alpha: 0.5 });  // inner scale ring
+    for (let i = 0; i < 48; i++) {                                          // tick marks
+      const a = (i / 48) * TAU, r1 = r * 0.93, r0 = r * (i % 4 === 0 ? 0.86 : 0.895);
+      ctx.line(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0, cx + Math.cos(a) * r1, cy + Math.sin(a) * r1,
+        { color: 'text', width: i % 4 === 0 ? 3 : 1.5, alpha: 0.65 });
+    }
+    ctx.line(cx - r * 0.16, cy, cx + r * 0.16, cy, { color: 'me', width: 2, alpha: 0.85 });   // crosshair
+    ctx.line(cx, cy - r * 0.16, cx, cy + r * 0.16, { color: 'me', width: 2, alpha: 0.85 });
+    const blink = 0.6 + 0.4 * Math.sin(t * 4);                                // her cursor, alive at the bottom of the lens
+    { const bw = Math.max(9, r * 0.035), bh = Math.max(18, r * 0.07); ctx.rect(cx - bw / 2, cy + r * 0.78 - bh / 2, bw, bh, { fill: true, color: 'me', alpha: blink }); }
+  };
+  if (version === 'A') ring(960, 540, r > 0 ? r : 430);
+  else ring(1570, 820, 185);
+  g.globalAlpha = a0; ctx._font = '';
+}
+
+/** The little white mascot (her assistant), drawn small. bob = running bounce phase. */
+export function mascotSmall(ctx, env, x, y, s, { alpha = 1, bob = 0, flip = false } = {}) {
+  if (alpha <= 0.003) return;
+  const dy = -Math.abs(Math.sin(bob)) * s * 0.08;
+  env.art.inks(ctx, 'cat_bust', { x: x - s / 2, y: y - s / 2 + dy, w: s, h: s * 1.33 }, { alpha, flip });
+}
+
+/** The mascot holding a molecule nameplate, running behind the molecule stream. */
+export function mascotNameplate(ctx, env, x, y, s, label, { alpha = 1, bob = 0 } = {}) {
+  if (alpha <= 0.003) return;
+  mascotSmall(ctx, env, x, y - s * 0.2, s, { alpha, bob });
+  const pw = Math.max(120, ctx.measure(label, { size: 26, font: 'mono', weight: 700 }) + 36);
+  ctx.rrect(x - pw / 2, y + s * 0.42, pw, 52, 10, { fill: 'raised', stroke: 'me', alpha, shadow: 0.4 });
+  ctx.text(label, x, y + s * 0.42 + 37, { size: 26, font: 'mono', weight: 700, color: 'me', align: 'center', alpha });
+}
+
+/**
+ * The ending: her spark scatters into a constellation, then contracts into her seal.
+ * version 'A' = 12 points (the twelve rounds); 'B' = 7 points (the Dipper).
+ * t0 = when the scatter starts (song seconds). The seal is a 60px "ring eye + ▌" at the bottom-right.
+ */
+export function constellationSeal(ctx, { t, t0, version = 'A', alpha = 1 } = {}) {
+  const dt = t - t0;
+  if (dt < 0 || alpha <= 0.003) return;
+  const g = ctx.g, a0 = g.globalAlpha;
+  const N = version === 'A' ? 12 : 7;
+  const pts = [];
+  if (version === 'A') {
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * TAU - Math.PI / 2; pts.push([960 + Math.cos(a) * 330, 480 + Math.sin(a) * 300]); }
+  } else {                                                             // the Dipper, tilted across the upper frame
+    const D = [[-420, -160], [-300, -120], [-180, -140], [-60, -180], [60, -260], [180, -300], [300, -260]];
+    for (const [dx, dy] of D) pts.push([960 + dx, 480 + dy]);
+  }
+  const SEAL = [1800, 978], SR = 30;
+  // phase 1: scatter out (0–1.4s). phase 2: hold, twinkle (1.4–2.4s). phase 3: contract to the seal (2.4–3.6s). phase 4: the seal holds.
+  const p1 = clamp(dt / 1.4), p2 = clamp((dt - 1.4) / 1.0), p3 = clamp((dt - 2.4) / 1.2), p4 = clamp((dt - 3.6) / 0.4);
+  const tw = 0.7 + 0.3 * Math.sin(t * 5);
+  for (let i = 0; i < N; i++) {
+    const [sx, sy] = pts[i];
+    const ox = 960 + (sx - 960) * easeOut(p1), oy = 430 + (sy - 430) * easeOut(p1);       // from her spark's place
+    const fx = ox + (SEAL[0] - ox) * easeInOut(p3), fy = oy + (SEAL[1] - oy) * easeInOut(p3);
+    const fade = (1 - p3) * alpha;
+    if (fade <= 0.003) continue;
+    ctx.circle(fx, fy, 7 * (1 - p3 * 0.5), { fill: true, color: 'text', alpha: fade * tw });
+    if (p3 < 1) {                                                        // the fog-blue threads between neighbours
+      const [nx, ny] = pts[(i + 1) % N];
+      const qx = 960 + (nx - 960) * easeOut(p1), qy = 430 + (ny - 430) * easeOut(p1);
+      const gx = qx + (SEAL[0] - qx) * easeInOut(p3), gy = qy + (SEAL[1] - qy) * easeInOut(p3);
+      ctx.line(fx, fy, gx, gy, { color: 'me', width: 2, alpha: fade * 0.55 * (1 - p3) });
+    }
+  }
+  if (p4 > 0) {                                                          // the seal: her ring eye + ▌, 60px, bottom-right
+    const a = p4 * alpha;
+    ctx.circle(SEAL[0], SEAL[1], SR, { color: 'text', width: 3, alpha: a });
+    ctx.circle(SEAL[0], SEAL[1], SR * 0.62, { color: 'me', width: 2.5, alpha: a });
+    ctx.circle(SEAL[0], SEAL[1], SR * 0.28, { fill: true, color: 'me', alpha: a });
+    ctx.rect(SEAL[0] + SR * 0.42 - 6, SEAL[1] - 2, 12, 22, { fill: true, color: 'text', alpha: a });
+  }
+  g.globalAlpha = a0; ctx._font = '';
 }

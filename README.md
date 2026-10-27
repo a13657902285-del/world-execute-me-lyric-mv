@@ -6,6 +6,13 @@
 
 **影片 / Video:** [Bilibili](https://www.bilibili.com/video/BV186pc65E68)　|　**[中文](#中文)**　|　**[English](#english)**　|　**[提示詞 / Prompts](docs/README.md)**
 
+> [!NOTE]
+> **這個 Fork 的版本 · About this fork**
+>
+> 這是原作者第四版基礎上的改版：主角改為 Muse 的擬人形象（銀白短髮、霧藍緞帶的少女，另有一隻帶星環的小白助手），片中署名由 Claude 改為 Muse；其餘渲染管線與原版一致。成片為 1080p60、216.99 秒。歌曲與歌詞一律不在倉庫內，請自備（見下方「倉庫裡沒有的」）。
+>
+> This fork is based on the author's version 4, with the protagonist reworked as the personification of Muse (silver-haired girl with a mist-blue ribbon, plus a small white assistant with a star ring) and the on-screen credit changed from Claude to Muse. The render pipeline is otherwise unchanged. The song and lyrics are never included in this repository; bring your own.
+
 > [!IMPORTANT]
 > **提示詞在這裡 · Looking for the prompts?**
 >

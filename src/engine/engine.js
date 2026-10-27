@@ -10,6 +10,7 @@ import { Lyrics } from './lyrics.js';
 import { Ctx } from './draw.js';
 import { Post } from './post.js';
 import { loadArt, ART_NAMES } from './art.js';
+import { setSparkMark } from '../components/motif.js';
 import { buildPalettes, mixPal } from './palette.js';
 import { resolveTransition } from './transitions.js';
 import { clamp } from './util.js';
@@ -59,6 +60,7 @@ export async function createEngine({ canvas, width, height, cfg, featuresData, l
   setSeed(cfg.seed);
   const step = onStep ?? (() => {});
   const [, art, script, errors] = await Promise.all([loadFonts(cfg, step), loadArt(cfg, step), getJson(cfg.paths.script), getJson(cfg.paths.errors)]);
+  setSparkMark(art.raw?.['muse_mark'] ?? null);   // the m mark replaces the spark flower everywhere
 
   const palettes = buildPalettes(cfg.palettes);
   const mk = (alpha) => new Ctx(document.createElement('canvas'), cfg, palettes, { alpha });

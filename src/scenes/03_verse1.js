@@ -16,6 +16,7 @@ import { hullOutline, morph, place } from '../engine/shapes.js';
 import { big, onPath } from '../engine/type.js';
 import { clamp, easeInOut, easeOut, lerp, prog, pulse } from '../engine/util.js';
 import { HANDOFF } from './02_title.js';
+import { mePortrait } from './objects.js';
 import { aiLine, cues } from './kit.js';
 import { LINE } from './shared.js';
 
@@ -119,6 +120,15 @@ export function verse1Shots(env) {
         }
         ctx.flash(0.28 * pulse(t - hitDim, 9), 'text');
         drawCursor(ctx, [{ t: START, x: 1600, y: 320 }, { t: hitDim - 0.3, x: C.x + 330, y: C.y + 30 }, { t: cutCircle, x: C.x + 300, y: C.y - 150 }], t);
+        // B-surprised: the answer's first beat — her eyes light up. Small half-body, bottom-left; the spark fires with her.
+        {
+          const sk = prog(t, START, START + 0.45), w = 330 * easeOut(sk);
+          if (w > 2) {
+            const h = w * 1.326;
+            mePortrait(ctx, env, 'me_expr_surprised', { x: 110, y: 1090 - h, w, h }, { alpha: clamp(sk * 2.5) });
+            if (sk < 1) spark(ctx, 110 + w / 2, 1090 - h - 40, 70 * sk, { alpha: sk });
+          }
+        }
         void box;
       },
     },

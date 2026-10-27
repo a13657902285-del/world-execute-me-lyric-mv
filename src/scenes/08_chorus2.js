@@ -235,7 +235,7 @@ export function chorus2Shots(env) {
         const str = BRB.slice(0, KEY_T.filter((k) => t >= k).length), stopped = prog(t, tStop + 0.2, tStop + 0.7);
         room(ctx, { art, name: 'rain', alpha: 0.5, dim: 0.42, t });
         windowFrame(ctx, L, { glass: 0.84 });
-        sidebar(ctx, L, { t, items: SIDE, active: 0, presence: 'online' });
+        sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: SIDE, active: 0, presence: 'online' });
         header(ctx, L, { t, title: TITLE, presence: 'online' });
         const bub = { x: TH.x + TH.w - 144, y: 704, w: 144, h: 68 }, pop = prog(t, tDots, tDots + 0.22);
         ctx.radial(bub.x + bub.w / 2, bub.y + bub.h / 2, 420, 'raised', 0.55 * clamp(pop));          // the page lifts a little round the dots
@@ -384,7 +384,7 @@ export function chorus2Shots(env) {
         room(ctx, { art, name: 'rain', alpha: 0.3, dim: 0.6, motif: 0.5, t });
         windowFrame(ctx, LL, { glass: 0.86 });
         // the sidebar's contents stay where they are; the window's edge closes over them
-        if (k < 1) ctx.clip({ x: LL.side.x, y: LL.side.y, w: LL.side.w, h: LL.side.h }, () => ctx.at(0, 0, () => sidebar(ctx, L, { t, items: SIDE, active: 0, presence: pres(0) }), { alpha: 1 - k }));
+        if (k < 1) ctx.clip({ x: LL.side.x, y: LL.side.y, w: LL.side.w, h: LL.side.h }, () => ctx.at(0, 0, () => sidebar(ctx, L, { mark: art.raw?.['muse_mark'],  t, items: SIDE, active: 0, presence: pres(0) }), { alpha: 1 - k }));
         header(ctx, LL, { t, title: TITLE });
         chip(ctx, LL.head.x + LL.head.w - 28, LL.head.y + 33, pres(0), { size: 22 });
         column(ctx, t, LL.thread, { u: 1 });

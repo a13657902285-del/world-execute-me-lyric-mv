@@ -35,7 +35,7 @@ export function client(ctx, env, t, { layout = {}, roomOpts = {}, frame = {}, si
   const L = chatLayout(layout);
   if (roomOpts !== false) room(ctx, { art: env.art, ...roomOpts });
   if (frame !== false) windowFrame(ctx, L, frame);
-  if (side !== false) sidebar(ctx, L, { t, items: env.script.sidebar ?? [], ...side });
+  if (side !== false) sidebar(ctx, L, { mark: env.art.raw?.['muse_mark'], t, items: env.script.sidebar ?? [], ...side });
   if (head !== false) header(ctx, L, { t, title: env.script.title ?? '', ...head });
   return L;
 }
@@ -146,6 +146,16 @@ export function withInserts(def, until, inserts) {
 export const GLASS_FIG = { x: 1060, y: -30, w: 960, h: 1280 };
 export function glassFigure(ctx, art, alpha, { color = 'mute', dx = 0, dy = 0, shade = 0.55 } = {}) {
   if (!(alpha > 0.003)) return;
+  const sil = art.raw?.['me_sil_front'];
+  if (sil) {
+    // her silhouette, never a generic one: white hair, lashes and gem read even in the dark
+    const g = ctx.g, x = GLASS_FIG.x + dx, y = GLASS_FIG.y + dy, w = GLASS_FIG.w, h = GLASS_FIG.h;
+    const sc = Math.max(w / sil.width, h / sil.height), dw = sil.width * sc, dh = sil.height * sc;
+    g.save(); g.globalAlpha = alpha;
+    g.drawImage(sil, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    g.restore();
+    return;
+  }
   art.inks(ctx, 'f_bust', { x: GLASS_FIG.x + dx, y: GLASS_FIG.y + dy, w: GLASS_FIG.w, h: GLASS_FIG.h }, { alpha, plates: [{ ink: 'all', role: color }, { ink: 'black', role: 'panel', alpha: shade }] });
 }
 

@@ -22,6 +22,7 @@ import { trace } from '../engine/shapes.js';
 import { sliced } from '../engine/type.js';
 import { clamp, easeOut, prog } from '../engine/util.js';
 import { HEART, HEART_N, OFF, expose, figure, footOf, heartPts, heartRadius, heartTangent, strip, stutter, tornNow } from './climax.js';
+import { mePortrait } from './objects.js';
 
 const TAU = Math.PI * 2;
 /** The pointer's outline (components/cursor.js), tip at the origin. */
@@ -306,15 +307,20 @@ export function plateProof(ctx, env, P = {}) {
   if (away == null || away < 1) ctx.at(px, py, () => { ctx.poly(ARROW, { close: true, fill: true, color: 'panel' }); ctx.poly(ARROW, { close: true, color: 'text', width: 1.4 }); }, { scale: 3.8 });
   // ---- what she lets go of
   request(ctx, env, 112, 520, { strike });
-  // ---- her: the shadow plate, then her three inks
-  art.inks(ctx, 'f_reach', SHE, { plates: [{ ink: 'all', role: 'bg', offset: [13, 13] }] });
-  figure(ctx, art, 'f_reach', SHE, m, { proof, ink: shown });
+  // ---- her (B-reach/E): the reach portrait instead of the f_reach print.
+  // The portrait IS the reaching hand; the proof's darkened state is a veil over it.
+  {
+    const pa = dim ? 0.55 : 1;
+    mePortrait(ctx, env, 'me_expr_reach', SHE, { alpha: pa });
+    if (dim) ctx.rect(SHE.x, SHE.y, SHE.w, SHE.h, { fill: true, color: 'bg', alpha: 0.45 });
+    else if (lit > 0) ctx.glow('me', 24, () => mePortrait(ctx, env, 'me_expr_reach', SHE, {}), 0.3 * lit);
+  }
   // ---- the foot: the band, the word, and her open hand on the word
   strip(ctx, FOOT.y, { rule: 'me' });
   if (word) stutter(ctx, word, t, at, { y: BASE, maxW: WORD_W.proof, m: m > 0 ? Math.max(8, m * 0.6) : 10, settle });
   // (the hand is cut out of the art itself: the patch of cream ink round her palm, art.part(); only that ink is printed
   // over the band, as a path, so its edge is the art's own edge at any size)
-  if (dim || shown.cream > 0) art.partClip(ctx, 'f_reach', SHE, 'palm', () => art.inks(ctx, 'f_reach', SHE, { vector: true, plates: [{ ink: 'cream', role: dim ? 'mute' : 'text', exact: true }] }), { grow: 2 });
+  // (the portrait's own reaching hand replaces the cut-out palm)
   marks(ctx, { color: 'mute' });
 }
 
